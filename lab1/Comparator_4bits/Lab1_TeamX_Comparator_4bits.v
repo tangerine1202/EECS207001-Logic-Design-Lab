@@ -1,10 +1,13 @@
 `timescale 1ns/1ps
 
 module Comparator_4bits (a, b, a_lt_b, a_gt_b, a_eq_b);
-input [4-1:0] a, b;
+
+parameter SIZE = 4;
+
+input [SIZE-1:0] a, b;
 output a_lt_b, a_gt_b, a_eq_b;
-wire [4-1:0] eq, gt;
-wire [4-1-1:0] leading_gt;
+wire [SIZE-1:0] eq, gt;
+wire [SIZE-1-1:0] leading_gt;
 
 Eq_1bit eq0 (
     .a(a[0]),

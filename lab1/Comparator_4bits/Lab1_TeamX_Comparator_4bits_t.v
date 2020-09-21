@@ -1,8 +1,11 @@
 `timescale 1ns/1ps
 
 module Comparator_4bits_t;
-reg [4-1:0] a = 4'b0;
-reg [4-1:0] b = 4'b0;
+
+parameter SIZE = 4;
+
+reg [SIZE-1:0] a = 4'b0;
+reg [SIZE-1:0] b = 4'b0;
 //reg a = 1'b0;
 //reg b = 1'b0;
 wire lt, gt, eq;
