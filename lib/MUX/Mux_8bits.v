@@ -1,9 +1,13 @@
 `timescale 1ns/1ps
 
+// TODO: rename args
 module Mux_8bit(a, b, sel, f);
-input [8-1:0] a, b;
+
+parameter SIZE = 8;
+
+input [SIZE-1:0] a, b;
 input sel;
-output [8-1:0] f;
+output [SIZE-1:0] f;
 
 Mux_1bit mux_1bit_0 (a[0], b[0], sel, f[0]);
 Mux_1bit mux_1bit_1 (a[1], b[1], sel, f[1]);
