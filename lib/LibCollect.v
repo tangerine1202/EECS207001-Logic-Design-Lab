@@ -1,4 +1,4 @@
-`timescale 1ns\1ps
+`timescale 1ns/1ps
 
 /**
  *  
@@ -25,5 +25,6 @@ reg fa_a, fa_b, fa_cin, fa_cout, fa_sum;
 FullAdder (fa_sum, fa_cout, fa_a, fa_b, fa_cin);
 
 // Mux
+
 
 endmodule
