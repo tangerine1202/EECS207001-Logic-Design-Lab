@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 
+// TODO: rename args
 module Le_1bit(a, b, a_le_b);
 input a, b;
 output a_le_b;
