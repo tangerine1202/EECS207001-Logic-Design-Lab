@@ -1,16 +1,16 @@
 `timescale 1ns / 1ps
 
-module Ge_1bit(a, b, a_ge_b);
+module Ge_1bit(out, a, b);
 input a, b;
-output a_ge_b;
+output out;
 wire lt;
 
 Lt_1bit lt0 (
     .a(a),
     .b(b),
-    .a_lt_b(lt)
+    .out(lt)
 );
 
-not not0 (a_ge_b, a_lt_b);
+not not0 (out, lt);
 
 endmodule

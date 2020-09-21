@@ -1,5 +1,6 @@
 `timescale 1ns/1ps
 
+// sel ? a:b
 module Mux_1bit (a, b, sel, f);
 input a, b;
 input sel;

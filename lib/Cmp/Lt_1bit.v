@@ -1,11 +1,11 @@
 `timescale 1ns/1ps
 
-module Lt_1bit (a, b, a_lt_b);
+module Lt_1bit (out, a, b);
 input a, b;
-output a_lt_b;
-wire inv_a;
+output out;
+wire a_n;
 
-not not0 (inv_a, a);
-and and0 (a_lt_b, inv_a, b);
+not not0 (a_n, a);
+and and0 (out, a_n, b);
 
-endmodule;
+endmodule
