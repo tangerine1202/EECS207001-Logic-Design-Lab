@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module Decoder_3x8 (sel, out);
+module Decoder_3x8 (out, sel);
 
 parameter SIZE_IN = 3;
 parameter SIZE_OUT = 8;
@@ -9,7 +9,6 @@ input [SIZE_IN-1:0] sel;
 output [SIZE_OUT-1:0] out;
 
 wire [SIZE_IN-1:0] sel_n;
-
 
 not not_0 (sel_n[0], sel[0]);
 not not_1 (sel_n[1], sel[1]);
