@@ -9,43 +9,43 @@ wire [4-1-1:0] leading_gt;
 Eq_1bit eq0 (
     .a(a[0]),
     .b(b[0]),
-    .a_eq_b(eq[0])
+    .out(eq[0])
 );
 Eq_1bit eq1 (
     .a(a[1]),
     .b(b[1]),
-    .a_eq_b(eq[1])
+    .out(eq[1])
 );
 Eq_1bit eq2 (
     .a(a[2]),
     .b(b[2]),
-    .a_eq_b(eq[2])
+    .out(eq[2])
 );
 Eq_1bit eq3 (
     .a(a[3]),
     .b(b[3]),
-    .a_eq_b(eq[3])
+    .out(eq[3])
 );
 
 Gt_1bit gt0 (
     .a(a[0]),
     .b(b[0]),
-    .a_gt_b(gt[0])
+    .out(gt[0])
 );
 Gt_1bit gt1 (
     .a(a[1]),
     .b(b[1]),
-    .a_gt_b(gt[1])
+    .out(gt[1])
 );
 Gt_1bit gt2 (
     .a(a[2]),
     .b(b[2]),
-    .a_gt_b(gt[2])
+    .out(gt[2])
 );
 Gt_1bit gt3 (
     .a(a[3]),
     .b(b[3]),
-    .a_gt_b(gt[3])
+    .out(gt[3])
 );
 
 // eq
