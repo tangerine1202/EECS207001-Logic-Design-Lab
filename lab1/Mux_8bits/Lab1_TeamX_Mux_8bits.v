@@ -10,8 +10,8 @@ output [SIZE-1:0] f;
 
 wire [SIZE-1:0] w1, w2;
 
-Mux_8bits mux_8bits_0 (a, b, sel1, w1);
-Mux_8bits mux_8bits_1 (c, d, sel2, w2);
-Mux_8bits mux_8bits_2 (w1, w2, sel3, f);
+_Mux_8bits mux_8bits_0 (.in1(a), .in0(b), .sel(sel1), .out(w1));
+_Mux_8bits mux_8bits_1 (.in1(c), .in0(d), .sel(sel2), .out(w2));
+_Mux_8bits mux_8bits_2 (.in1(w1), .in0(w2), .sel(sel3), .out(f));
 
 endmodule
