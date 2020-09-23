@@ -5,7 +5,7 @@ module Comparator_4bits (a, b, a_lt_b, a_gt_b, a_eq_b);
 parameter SIZE = 4;
 
 input [SIZE-1:0] a;
-input b;
+input [SIZE-1:0] b;
 output a_lt_b;
 output a_gt_b;
 output a_eq_b;
@@ -66,5 +66,34 @@ or  or_gt_0  (a_gt_b, gt[3], leading_gt[2], leading_gt[1], leading_gt[0]);
 
 // lt
 nor nor_lt_0 (a_lt_b, a_eq_b, a_gt_b);
+
+endmodule
+
+
+module Eq_1bit (out, a, b);
+
+input a;
+input b;
+output out;
+
+wire c, d;
+
+or or0 (c, a, b);
+nand nand0 (d, a, b);
+nand nand1 (out, c, d);
+
+endmodule
+
+
+module Gt_1bit (out, a, b);
+
+input a;
+input b;
+output out;
+
+wire b_n;
+
+not not0 (b_n, b);
+and and0 (out, a, b_n);
 
 endmodule

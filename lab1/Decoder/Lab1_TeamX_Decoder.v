@@ -38,3 +38,62 @@ not not4 [SIZE_OUT_HALF-1:0] (dout_n, dout[SIZE_OUT_HALF-1:0]);
 not not5 [SIZE_OUT_HALF-1:0] (dout[SIZE_OUT-1:SIZE_OUT_HALF], dout_n);
 
 endmodule
+
+
+module Mux_1bit (out, in1, in0, sel);
+
+input in0;
+input in1;
+input sel;
+output out;
+
+wire sel_n;
+wire and_in_0;
+wire and_in_1;
+
+not not0 (sel_n, sel);
+and and0 (and_in_1, in1, sel);
+and and1 (and_in_0, in0, sel_n);
+or  or0  (out, and_in_1, and_in_0);
+
+endmodule
+
+
+module Mux_3bits (out, in1, in0, sel);
+
+parameter SIZE = 3;
+
+input [SIZE-1:0] in0;
+input [SIZE-1:0] in1;
+input sel;
+output [SIZE-1:0] out;
+
+Mux_1bit mux_1bit [SIZE-1:0] (out, in1, in0, sel);
+
+endmodule
+
+
+module Decoder_3x8 (out, sel);
+
+parameter SIZE_IN = 3;
+parameter SIZE_OUT = 8;
+
+input [SIZE_IN-1:0] sel;
+output [SIZE_OUT-1:0] out;
+
+wire [SIZE_IN-1:0] sel_n;
+
+not not0 (sel_n[0], sel[0]);
+not not1 (sel_n[1], sel[1]);
+not not2 (sel_n[2], sel[2]);
+
+and and0 (out[0], sel_n[2], sel_n[1], sel_n[0]);
+and and1 (out[1], sel_n[2], sel_n[1], sel[0]);
+and and2 (out[2], sel_n[2], sel[1], sel_n[0]);
+and and3 (out[3], sel_n[2], sel[1], sel[0]);
+and and4 (out[4], sel[2], sel_n[1], sel_n[0]);
+and and5 (out[5], sel[2], sel_n[1], sel[0]);
+and and6 (out[6], sel[2], sel[1], sel_n[0]);
+and and7 (out[7], sel[2], sel[1], sel[0]);
+
+endmodule
