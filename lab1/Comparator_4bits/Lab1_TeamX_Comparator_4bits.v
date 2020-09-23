@@ -4,49 +4,52 @@ module Comparator_4bits (a, b, a_lt_b, a_gt_b, a_eq_b);
 
 parameter SIZE = 4;
 
-input [SIZE-1:0] a, b;
-output a_lt_b, a_gt_b, a_eq_b;
+input [SIZE-1:0] a;
+input b;
+output a_lt_b;
+output a_gt_b;
+output a_eq_b;
 
 wire [SIZE-1:0] eq, gt;
 wire [SIZE-1-1:0] leading_gt;
 
-Eq_1bit eq_0 (
+Eq_1bit eq0 (
   .a(a[0]),
   .b(b[0]),
   .out(eq[0])
 );
-Eq_1bit eq_1 (
+Eq_1bit eq1 (
   .a(a[1]),
   .b(b[1]),
   .out(eq[1])
 );
-Eq_1bit eq_2 (
+Eq_1bit eq2 (
   .a(a[2]),
   .b(b[2]),
   .out(eq[2])
 );
-Eq_1bit eq_3 (
+Eq_1bit eq3 (
   .a(a[3]),
   .b(b[3]),
   .out(eq[3])
 );
 
-Gt_1bit gt_0 (
+Gt_1bit gt0 (
   .a(a[0]),
   .b(b[0]),
   .out(gt[0])
 );
-Gt_1bit gt_1 (
+Gt_1bit gt1 (
   .a(a[1]),
   .b(b[1]),
   .out(gt[1])
 );
-Gt_1bit gt_2 (
+Gt_1bit gt2 (
   .a(a[2]),
   .b(b[2]),
   .out(gt[2])
 );
-Gt_1bit gt_3 (
+Gt_1bit gt3 (
   .a(a[3]),
   .b(b[3]),
   .out(gt[3])
