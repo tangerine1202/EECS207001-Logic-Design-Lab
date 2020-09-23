@@ -24,9 +24,9 @@ Mux_8bits mux_8bits (
   .f(f)
 );
 
-initial begin 
+initial begin
   repeat (2 ** 3) begin
-    #1 {sel3, sel2, sel1} = {sel3, sel2, sel1} + 8'h01;
+    #1 {sel3, sel2, sel1} = {sel3, sel2, sel1} + 3'b1;
   end
   #1 $finish;
 end

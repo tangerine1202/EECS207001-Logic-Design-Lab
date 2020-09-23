@@ -23,4 +23,4 @@ and and5 (out[5], sel[2], sel_n[1], sel[0]);
 and and6 (out[6], sel[2], sel[1], sel_n[0]);
 and and7 (out[7], sel[2], sel[1], sel[0]);
 
-endmodule 
+endmodule

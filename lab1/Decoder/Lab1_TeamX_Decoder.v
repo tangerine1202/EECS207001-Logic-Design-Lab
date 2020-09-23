@@ -9,7 +9,8 @@ parameter SIZE_OUT_HALF = SIZE_OUT/2;
 input [SIZE_IN-1:0] din;
 output [SIZE_OUT-1:0] dout;
 
-wire [SIZE_IN-1:0] din_n;
+// Since din_n[3] isn't be used, -1 one more time.
+wire [SIZE_IN-1-1:0] din_n;
 wire [3-1:0] decoder_3x8_in;
 wire [SIZE_OUT_HALF-1:0] dout_n;
 
@@ -17,7 +18,6 @@ wire [SIZE_OUT_HALF-1:0] dout_n;
 not not0 (din_n[0], din[0]);
 not not1 (din_n[1], din[1]);
 not not2 (din_n[2], din[2]);
-not not3 (din_n[3], din[3]);
 
 // Select input
 Mux_3bits mux_3bits_0 (
