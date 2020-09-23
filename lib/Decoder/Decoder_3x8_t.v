@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module Decoder_3x8_t ;
+module Decoder_3x8_t;
 
 parameter SIZE_IN = 3;
 parameter SIZE_OUT = 8;
