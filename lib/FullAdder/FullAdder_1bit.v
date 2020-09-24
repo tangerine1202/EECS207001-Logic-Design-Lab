@@ -21,10 +21,10 @@ NXOR nxor2 (
 );
 
 Mux_1bit m1 (
-  .a(a),
-  .b(cin),
+  .in1(a),
+  .in0(cin),
   .sel(x1),
-  .f(cout)
+  .out(cout)
 );
 
 endmodule
