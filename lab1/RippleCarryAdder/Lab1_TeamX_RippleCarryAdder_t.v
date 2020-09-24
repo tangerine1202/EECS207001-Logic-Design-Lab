@@ -19,11 +19,38 @@ RippleCarryAdder fa (
 );
 
 initial begin
-  repeat (2 ** 8) begin
-    #1 a = a + 1'b1;
-    #1 b = b + 1'b1;
+  repeat (2 ** 4) begin
+    #1 {a, b} = {a, b} + 16'b1;
     #1 cin = cin + 1'b1;
   end
+  #1 {b, a} = 16'b0;
+  repeat (2 ** 4) begin
+    #1 {b, a} = {b, a} + 16'b1;
+    #1 cin = cin + 1'b1;
+  end
+
+  #1 {a, b} = 16'hf800;
+  repeat (2 ** 4) begin
+    #1 {a, b} = {a, b} + 16'b1;
+    #1 cin = cin + 1'b1;
+  end
+  #1 {b, a} = 16'hf800;
+  repeat (2 ** 4) begin
+    #1 {b, a} = {b, a} + 16'b1;
+    #1 cin = cin + 1'b1;
+  end
+
+  #1 {a, b} = 16'hfff8;
+  repeat (2 ** 3) begin
+    #1 {a, b} = {a, b} + 16'b1;
+    #1 cin = cin + 1'b1;
+  end
+  #1 {b, a} = 16'hfff8;
+  repeat (2 ** 3) begin
+    #1 {b, a} = {b, a} + 16'b1;
+    #1 cin = cin + 1'b1;
+  end
+
   #1 $finish;
 end
 
