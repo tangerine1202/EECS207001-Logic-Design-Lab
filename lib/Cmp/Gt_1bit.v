@@ -1,8 +1,11 @@
 `timescale 1ns/1ps
 
 module Gt_1bit (out, a, b);
-input a, b;
+
+input a;
+input b;
 output out;
+
 wire b_n;
 
 not not0 (b_n, b);

@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
 
-module Mux_4bits (out, in1, in0, sel);
+module _Mux_8bits (out, in1, in0, sel);
 
-parameter SIZE = 4;
+parameter SIZE = 8;
 
 input [SIZE-1:0] in0;
 input [SIZE-1:0] in1;
