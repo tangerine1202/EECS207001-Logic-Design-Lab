@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module Nxor_1bit (out, a, b);
+module Xnor_1bit (out, a, b);
 
 input a;
 input b;
