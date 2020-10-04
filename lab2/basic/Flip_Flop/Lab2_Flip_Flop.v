@@ -24,6 +24,7 @@ Latch Slave (
 
 endmodule
 
+
 module Latch (clk, d, q);
 
 input clk;
