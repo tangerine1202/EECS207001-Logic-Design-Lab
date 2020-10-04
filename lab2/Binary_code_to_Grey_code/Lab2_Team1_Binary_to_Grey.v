@@ -14,31 +14,31 @@ nand nand1 (din_n[1], din[1]);
 nand nand2 (din_n[2], din[2]);
 nand nand3 (din_n[3], din[3]);
 
-// 1st bit output equal 1st bit input
-nand nand4 (dout[0], din_n[0]);
+// output[3] equal to input[3]
+nand nand4 (dout[3], din_n[3]);
 
-// 2nd bit output control by 1st bit input
+// output[2] control by input [3]
 Mux_1bit_in_nand mux0 (
-  .in0(din[1]),
-  .in1(din_n[1]),
-  .sel(d_out[0]),
-  .out(dout[1])
-);
-
-// 3rd bit output control by 2nd bit input
-Mux_1bit_in_nand mux1 (
   .in0(din[2]),
   .in1(din_n[2]),
-  .sel(d_out[1]),
+  .sel(din[3]),
   .out(dout[2])
 );
 
-// 2nd bit output control by 1 bit input
+// output[1] control by input[2]
+Mux_1bit_in_nand mux1 (
+  .in0(din[1]),
+  .in1(din_n[1]),
+  .sel(din[2]),
+  .out(dout[1])
+);
+
+// output[0] control by input[1]
 Mux_1bit_in_nand mux2 (
-  .in0(din[3]),
-  .in1(din_n[3]),
-  .sel(d_out[2]),
-  .out(dout[3])
+  .in0(din[0]),
+  .in1(din_n[0]),
+  .sel(din[1]),
+  .out(dout[0])
 );
 
 endmodule
