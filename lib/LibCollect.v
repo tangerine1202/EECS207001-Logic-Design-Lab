@@ -22,7 +22,7 @@ Lt_1bit (lt_out, lt_a, lt_b);
 
 // FullAdder
 reg fa_a, fa_b, fa_cin, fa_cout, fa_sum;
-FullAdder (fa_sum, fa_cout, fa_a, fa_b, fa_cin);
+FullAdder_1bit (fa_sum, fa_cout, fa_a, fa_b, fa_cin);
 
 // Mux
 reg mux1_in0, mux1_in1, mux1_out, mux_sel;
