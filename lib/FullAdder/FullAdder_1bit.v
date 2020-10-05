@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module FullAdder (sum, cout, a, b, cin);
+module FullAdder_1bit (sum, cout, a, b, cin);
 
 input a;
 input b;

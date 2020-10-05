@@ -12,8 +12,8 @@ wire and_in_0;
 wire and_in_1;
 
 not not0 (sel_n, sel);
-and and0 (and_in_1, in1, sel);
-and and1 (and_in_0, in0, sel_n);
+and and0 (and_in_0, in0, sel_n);
+and and1 (and_in_1, in1, sel);
 or  or0  (out, and_in_1, and_in_0);
 
 endmodule
