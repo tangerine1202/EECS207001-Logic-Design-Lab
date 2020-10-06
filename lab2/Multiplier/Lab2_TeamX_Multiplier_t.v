@@ -5,7 +5,7 @@ parameter SIZE = 4;
 
 reg [SIZE-1:0] a = 4'b0;
 reg [SIZE-1:0] b = 4'b0;
-reg [8-1:0] p;
+wire [8-1:0] p;
 
 Multiplier mul (
     .a(a),
