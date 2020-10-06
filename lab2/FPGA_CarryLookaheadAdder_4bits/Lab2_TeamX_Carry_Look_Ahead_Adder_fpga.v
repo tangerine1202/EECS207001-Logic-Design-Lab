@@ -1,6 +1,114 @@
 `timescale 1ns/1ps
 
-module Carry_Look_Ahead_Adder_7Segment_Display (ca, cb, cc, cd, ce, cf, cg, dp, val);
+module Carry_Look_Ahead_Adder_FPGA (an, ca, cb, cc, cd, ce, cf, cg, dp, a, b, cin);
+
+parameter SIZE = 4;
+
+input [SIZE-1:0] a;
+input [SIZE-1:0] b;
+input cin;
+output [SIZE-1:0] an;
+output ca;
+output cb;
+output cc;
+output cd;
+output ce;
+output cf;
+output cg;
+output dp;
+
+wire cout;
+wire [SIZE-1:0] sum;
+
+
+Carry_Look_Ahead_Adder cla_adder_0 (
+  .a(a),
+  .b(b),
+  .cin(cin),
+  .cout(cout),
+  .sum(sum)
+);
+
+Seven_Segment_Display seven_seg_display_0 (
+  .ca(ca),
+  .cb(cb),
+  .cc(cc),
+  .cd(cd),
+  .ce(ce),
+  .cf(cf),
+  .cg(cg),
+  .dp(dp),
+  .cout(cout),
+  .sum(sum)
+);
+
+
+// Generate '0' to illuminate AN[3]
+wire cin_n;
+wire const_one;
+nand cin_n_0 (cin_n, cin, cin);
+nand const_one_0 (const_one, cin, cin_n);
+
+nand an0_0 (an[0], cin, cin_n);
+nand an1_0 (an[1], cin, cin_n);
+nand an2_0 (an[2], cin, cin_n);
+nand an3_0 (an[3], const_one, const_one);
+
+endmodule
+
+
+module Seven_Segment_Display (ca, cb, cc, cd, ce, cf, cg, dp, cout, sum);
+
+parameter SIZE_IN = 4;
+parameter SIZE_OUT = 16;
+
+input [SIZE_IN-1:0] sum;
+input cout;
+output ca;
+output cb;
+output cc;
+output cd;
+output ce;
+output cf;
+output cg;
+output dp;
+
+wire [SIZE_OUT-1:0] ws_n;
+wire ca_n;
+wire cb_n;
+wire cc_n;
+wire cd_n;
+wire ce_n;
+wire cf_n;
+wire cg_n;
+
+
+// dp
+nand dp_0 (dp, cout, cout);
+
+Decoder_n_4x16_in_nand decoder_n_4x16_0 (
+  .sel(sum[SIZE_IN-1:0]), 
+  .out(ws_n[SIZE_OUT-1:0])
+);
+
+nand ca_n_0 (ca_n, ws_n[0], ws_n[2], ws_n[3], ws_n[5], ws_n[6], ws_n[7], ws_n[8], ws_n[9], ws_n[10], ws_n[12], ws_n[14], ws_n[15]);
+nand cb_n_0 (cb_n, ws_n[0], ws_n[1], ws_n[2], ws_n[3], ws_n[4], ws_n[7], ws_n[8], ws_n[9], ws_n[10], ws_n[13]);
+nand cc_n_0 (cc_n, ws_n[0], ws_n[1], ws_n[3], ws_n[4], ws_n[5], ws_n[6], ws_n[7], ws_n[8], ws_n[9], ws_n[10], ws_n[11], ws_n[13]);
+nand cd_n_0 (cd_n, ws_n[0], ws_n[2], ws_n[3], ws_n[5], ws_n[6], ws_n[8], ws_n[9], ws_n[11], ws_n[12], ws_n[13], ws_n[14]);
+nand ce_n_0 (ce_n, ws_n[0], ws_n[2], ws_n[6], ws_n[8], ws_n[10], ws_n[11], ws_n[12], ws_n[13], ws_n[14], ws_n[15]);
+nand cf_n_0 (cf_n, ws_n[0], ws_n[4], ws_n[5], ws_n[6], ws_n[8], ws_n[9], ws_n[10], ws_n[11], ws_n[12], ws_n[14], ws_n[15]);
+nand cg_n_0 (cg_n, ws_n[2], ws_n[3], ws_n[4], ws_n[5], ws_n[6], ws_n[8], ws_n[9], ws_n[10], ws_n[11], ws_n[13], ws_n[14], ws_n[15]);
+
+nand ca_0 (ca, ca_n, ca_n);
+nand cb_0 (cb, cb_n, cb_n);
+nand cc_0 (cc, cc_n, cc_n);
+nand cd_0 (cd, cd_n, cd_n);
+nand ce_0 (ce, ce_n, ce_n);
+nand cf_0 (cf, cf_n, cf_n);
+nand cg_0 (cg, cg_n, cg_n);
+
+endmodule
+
 
 module Carry_Look_Ahead_Adder (a, b, cin, cout, sum);
 
@@ -171,10 +279,10 @@ nand nand10 (sum, abc, abncn, anbcn, anbnc);
 endmodule
 
 
-module NAND_Decoder_3x8 (out, sel);
+module Decoder_n_4x16_in_nand (out, sel);
 
-parameter SIZE_IN = 3;
-parameter SIZE_OUT = 8;
+parameter SIZE_IN = 4;
+parameter SIZE_OUT = 16;
 
 input [SIZE_IN-1:0] sel;
 output [SIZE_OUT-1:0] out;
@@ -182,26 +290,27 @@ output [SIZE_OUT-1:0] out;
 wire [SIZE_IN-1:0] sel_n;
 wire [SIZE_OUT-1:0] out_n;
 
-nand nand0 (sel_n[0], sel[0], sel[0]);
-nand nand1 (sel_n[1], sel[1], sel[1]);
-nand nand2 (sel_n[2], sel[2], sel[2]);
+nand sel_n_0 (sel_n[0], sel[0], sel[0]);
+nand sel_n_1 (sel_n[1], sel[1], sel[1]);
+nand sel_n_2 (sel_n[2], sel[2], sel[2]);
+nand sel_n_3 (sel_n[3], sel[3], sel[3]);
 
-nand nand3 (out_n[0], sel_n[2], sel_n[1], sel_n[0]);
-nand nand4 (out_n[1], sel_n[2], sel_n[1], sel[0]);
-nand nand5 (out_n[2], sel_n[2], sel[1], sel_n[0]);
-nand nand6 (out_n[3], sel_n[2], sel[1], sel[0]);
-nand nand7 (out_n[4], sel[2], sel_n[1], sel_n[0]);
-nand nand8 (out_n[5], sel[2], sel_n[1], sel[0]);
-nand nand9 (out_n[6], sel[2], sel[1], sel_n[0]);
-nand nand10 (out_n[7], sel[2], sel[1], sel[0]);
+nand nand0 (out[0], sel_n[0], sel_n[1], sel_n[2], sel_n[3]);
+nand nand1 (out[1], sel[0], sel_n[1], sel_n[2], sel_n[3]);
+nand nand2 (out[2], sel_n[0], sel[1], sel_n[2], sel_n[3]);
+nand nand3 (out[3], sel[0], sel[1], sel_n[2], sel_n[3]);
+nand nand4 (out[4], sel_n[0], sel_n[1], sel[2], sel_n[3]);
+nand nand5 (out[5], sel[0], sel_n[1], sel[2], sel_n[3]);
+nand nand6 (out[6], sel_n[0], sel[1], sel[2], sel_n[3]);
+nand nand7 (out[7], sel[0], sel[1], sel[2], sel_n[3]);
+nand nand8 (out[8], sel_n[0], sel_n[1], sel_n[2], sel[3]);
+nand nand9 (out[9], sel[0], sel_n[1], sel_n[2], sel[3]);
+nand nand10 (out[10], sel_n[0], sel[1], sel_n[2], sel[3]);
+nand nand11 (out[11], sel[0], sel[1], sel_n[2], sel[3]);
+nand nand12 (out[12], sel_n[0], sel_n[1], sel[2], sel[3]);
+nand nand13 (out[13], sel[0], sel_n[1], sel[2], sel[3]);
+nand nand14 (out[14], sel_n[0], sel[1], sel[2], sel[3]);
+nand nand15 (out[15], sel[0], sel[1], sel[2], sel[3]);
 
-nand nand11 (out[0], out_n[0], out_n[0]);
-nand nand12 (out[1], out_n[1], out_n[1]);
-nand nand13 (out[2], out_n[2], out_n[2]);
-nand nand14 (out[3], out_n[3], out_n[3]);
-nand nand15 (out[4], out_n[4], out_n[4]);
-nand nand16 (out[5], out_n[5], out_n[5]);
-nand nand17 (out[6], out_n[6], out_n[6]);
-nand nand18 (out[7], out_n[7], out_n[7]);
 
 endmodule
