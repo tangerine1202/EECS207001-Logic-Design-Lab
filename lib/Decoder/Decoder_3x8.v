@@ -2,13 +2,10 @@
 
 module Decoder_3x8 (out, sel);
 
-parameter SIZE_IN = 3;
-parameter SIZE_OUT = 8;
+input [3-1:0] sel;
+output [8-1:0] out;
 
-input [SIZE_IN-1:0] sel;
-output [SIZE_OUT-1:0] out;
-
-wire [SIZE_IN-1:0] sel_n;
+wire [3-1:0] sel_n;
 
 not not0 (sel_n[0], sel[0]);
 not not1 (sel_n[1], sel[1]);

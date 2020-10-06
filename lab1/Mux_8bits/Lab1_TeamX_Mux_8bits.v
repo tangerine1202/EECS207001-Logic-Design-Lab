@@ -2,13 +2,11 @@
 
 module Mux_8bits (a, b, c, d, sel1, sel2, sel3, f);
 
-parameter SIZE = 8;
-
-input [SIZE-1:0] a, b, c, d;
+input [8-1:0] a, b, c, d;
 input sel1, sel2, sel3;
-output [SIZE-1:0] f;
+output [8-1:0] f;
 
-wire [SIZE-1:0] w1, w2;
+wire [8-1:0] w1, w2;
 
 _Mux_8bits mux_8bits_0 (.in1(a), .in0(b), .sel(sel1), .out(w1));
 _Mux_8bits mux_8bits_1 (.in1(c), .in0(d), .sel(sel2), .out(w2));
@@ -38,13 +36,11 @@ endmodule
 
 module _Mux_8bits (out, in1, in0, sel);
 
-parameter SIZE = 8;
-
-input [SIZE-1:0] in0;
-input [SIZE-1:0] in1;
+input [8-1:0] in0;
+input [8-1:0] in1;
 input sel;
-output [SIZE-1:0] out;
+output [8-1:0] out;
 
-Mux_1bit mux_1bit [SIZE-1:0] (out, in1, in0, sel);
+Mux_1bit mux_1bit [8-1:0] (out, in1, in0, sel);
 
 endmodule

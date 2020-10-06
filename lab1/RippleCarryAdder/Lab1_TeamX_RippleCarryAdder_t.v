@@ -2,12 +2,10 @@
 
 module RippleCarryAdder_t;
 
-parameter SIZE = 8;
-
-reg [SIZE-1:0] a = 8'b0;
-reg [SIZE-1:0] b = 8'b0;
+reg [8-1:0] a = 8'b0;
+reg [8-1:0] b = 8'b0;
 reg [0:0] cin = 1'b0;
-wire [SIZE-1:0] sum;
+wire [8-1:0] sum;
 wire cout;
 
 RippleCarryAdder fa (

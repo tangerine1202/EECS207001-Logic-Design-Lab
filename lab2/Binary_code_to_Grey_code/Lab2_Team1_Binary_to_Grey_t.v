@@ -2,10 +2,8 @@
 
 module Binary_to_Grey_t;
 
-parameter SIZE = 4;
-
-reg [SIZE-1:0] din = 4'b0;
-wire [SIZE-1:0] dout;
+reg [4-1:0] din = 4'b0;
+wire [4-1:0] dout;
 
 Binary_to_Grey binary_to_gray (
   .din(din),

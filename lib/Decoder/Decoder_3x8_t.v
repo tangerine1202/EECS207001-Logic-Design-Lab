@@ -2,11 +2,8 @@
 
 module Decoder_3x8_t;
 
-parameter SIZE_IN = 3;
-parameter SIZE_OUT = 8;
-
-reg [SIZE_IN-1:0] sel = 3'b0;
-wire [SIZE_OUT-1:0] out;
+reg [3-1:0] sel = 3'b0;
+wire [8-1:0] out;
 
 Decoder_3x8 decoder_3x8 (
   .sel(sel),

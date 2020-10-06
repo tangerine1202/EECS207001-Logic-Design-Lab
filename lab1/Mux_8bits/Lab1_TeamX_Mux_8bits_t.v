@@ -2,16 +2,14 @@
 
 module Mux_8bits_t;
 
-parameter SIZE = 8;
-
-parameter [SIZE-1:0] a = 8'h00;
-parameter [SIZE-1:0] b = 8'h0f;
-parameter [SIZE-1:0] c = 8'hf0;
-parameter [SIZE-1:0] d = 8'hff;
+reg [8-1:0] a = 8'h00;
+reg [8-1:0] b = 8'h0f;
+reg [8-1:0] c = 8'hf0;
+reg [8-1:0] d = 8'hff;
 reg sel1 = 1'b0;
 reg sel2 = 1'b0;
 reg sel3 = 1'b0;
-wire [SIZE-1:0] f;
+wire [8-1:0] f;
 
 Mux_8bits mux_8bits (
   .a(a),

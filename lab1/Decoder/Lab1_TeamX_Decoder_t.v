@@ -2,11 +2,8 @@
 
 module Decoder_t;
 
-parameter SIZE_IN = 4;
-parameter SIZE_OUT = 16;
-
-reg [SIZE_IN-1:0] din = 4'b0;
-wire [SIZE_OUT-1:0] dout;
+reg [4-1:0] din = 4'b0;
+wire [16-1:0] dout;
 
 Decoder decoder_0 (
   .din(din),

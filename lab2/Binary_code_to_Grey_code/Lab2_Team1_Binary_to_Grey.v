@@ -2,12 +2,10 @@
 
 module Binary_to_Grey (din, dout);
 
-parameter SIZE = 4;
+input [4-1:0] din;
+output [4-1:0] dout;
 
-input [SIZE-1:0] din;
-output [SIZE-1:0] dout;
-
-wire [SIZE-1:0] din_n;
+wire [4-1:0] din_n;
 
 nand nand0 (din_n[0], din[0]);
 nand nand1 (din_n[1], din[1]);

@@ -2,13 +2,11 @@
 
 module Mux_3bits (out, in1, in0, sel);
 
-parameter SIZE = 3;
-
-input [SIZE-1:0] in0;
-input [SIZE-1:0] in1;
+input [3-1:0] in0;
+input [3-1:0] in1;
 input sel;
-output [SIZE-1:0] out;
+output [3-1:0] out;
 
-Mux_1bit mux_1bit [SIZE-1:0] (out, in1, in0, sel);
+Mux_1bit mux_1bit [3-1:0] (out, in1, in0, sel);
 
 endmodule

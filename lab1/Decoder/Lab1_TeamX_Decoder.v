@@ -2,17 +2,13 @@
 
 module Decoder (din, dout);
 
-parameter SIZE_IN = 4;
-parameter SIZE_OUT = 16;
-parameter SIZE_OUT_HALF = SIZE_OUT/2;
-
-input [SIZE_IN-1:0] din;
-output [SIZE_OUT-1:0] dout;
+input [4-1:0] din;
+output [16-1:0] dout;
 
 // Since din_n[3] isn't be used, -1 one more time.
-wire [SIZE_IN-1-1:0] din_n;
+wire [4-1-1:0] din_n;
 wire [3-1:0] decoder_3x8_in;
-wire [SIZE_OUT_HALF-1:0] dout_n;
+wire [8-1:0] dout_n;
 
 // Inverse input
 not not0 (din_n[0], din[0]);
@@ -30,12 +26,12 @@ Mux_3bits mux_3bits_0 (
 // Decode input
 Decoder_3x8 decoder_3x8_0 (
   .sel(decoder_3x8_in),
-  .out(dout[SIZE_OUT_HALF-1:0])
+  .out(dout[8-1:0])
 );
 
 // Duplicate decoder output
-not not4 [SIZE_OUT_HALF-1:0] (dout_n, dout[SIZE_OUT_HALF-1:0]);
-not not5 [SIZE_OUT_HALF-1:0] (dout[SIZE_OUT-1:SIZE_OUT_HALF], dout_n);
+not not4 [8-1:0] (dout_n, dout[8-1:0]);
+not not5 [8-1:0] (dout[16-1:8], dout_n);
 
 endmodule
 
@@ -61,27 +57,22 @@ endmodule
 
 module Mux_3bits (out, in1, in0, sel);
 
-parameter SIZE = 3;
-
-input [SIZE-1:0] in0;
-input [SIZE-1:0] in1;
+input [3-1:0] in0;
+input [3-1:0] in1;
 input sel;
-output [SIZE-1:0] out;
+output [3-1:0] out;
 
-Mux_1bit mux_1bit [SIZE-1:0] (out, in1, in0, sel);
+Mux_1bit mux_1bit [3-1:0] (out, in1, in0, sel);
 
 endmodule
 
 
 module Decoder_3x8 (out, sel);
 
-parameter SIZE_IN = 3;
-parameter SIZE_OUT = 8;
+input [3-1:0] sel;
+output [8-1:0] out;
 
-input [SIZE_IN-1:0] sel;
-output [SIZE_OUT-1:0] out;
-
-wire [SIZE_IN-1:0] sel_n;
+wire [3-1:0] sel_n;
 
 not not0 (sel_n[0], sel[0]);
 not not1 (sel_n[1], sel[1]);

@@ -2,14 +2,12 @@
 
 module RippleCarryAdder (a, b, cin, cout, sum);
 
-parameter SIZE = 8;
-
-input [SIZE-1:0] a, b;
+input [8-1:0] a, b;
 input cin;
-output [SIZE-1:0] sum;
+output [8-1:0] sum;
 output cout;
 
-wire [SIZE-1-1:0] out;
+wire [8-1-1:0] out;
 
 FullAdder_1bit fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(out[0]));
 FullAdder_1bit fa1 (.a(a[1]), .b(b[1]), .cin(out[0]), .sum(sum[1]), .cout(out[1]));
