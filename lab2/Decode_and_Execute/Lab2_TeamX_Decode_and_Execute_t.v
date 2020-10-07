@@ -35,7 +35,7 @@ initial begin
     op_code = op_code + 3'b001;
   end
   */
-
+/*
   // ADD 
   op_code = 3'b000;
   {rs, rt} = 8'b0;
@@ -45,8 +45,6 @@ initial begin
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
-  
-  /*
   // SUB
   op_code = 3'b001;
   {rs, rt} = 8'b0;
@@ -92,6 +90,7 @@ initial begin
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
+  */
   // RS MUL 2 
   op_code = 3'b110;
   {rs, rt} = 8'b0;
@@ -101,7 +100,6 @@ initial begin
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
-  */
   // MUL
   op_code = 3'b111;
   {rs, rt} = 8'b0;
@@ -120,12 +118,13 @@ task Test;
 begin
   case (op_code)
     3'b000:
-      // add
+      // ADD
       if (rd !== rs + rt) begin
         $display("[ERROR] ADD");
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", rs + rt);
         $display;
       end
     3'b001:
@@ -135,33 +134,37 @@ begin
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", rs - rt);
         $display;
       end
     3'b010:
-    // INC
+    // INC;
       if (rd !== rs + 1'b1) begin
         $display("[ERROR] INC");
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", rs + 1'b1);
         $display;
       end
     3'b011:
       // BITWISE_NOR
-      if (rd !== !(rs | rt)) begin
+      if (rd !== ~(rs | rt)) begin
         $display("[ERROR] BITWISE_NOR");
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", ~(rs | rt));
         $display;
       end
     3'b100:
       // BITWISE_NAND 
-      if (rd !== !(rs & rt)) begin
+      if (rd !== ~(rs & rt)) begin
         $display("[ERROR] BITWISE_NAND");
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", ~(rs & rt));
         $display;
       end
     3'b101:
@@ -171,6 +174,7 @@ begin
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", rs >> 2);
         $display;
       end
     3'b110:
@@ -180,6 +184,7 @@ begin
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", rs << 1);
         $display;
       end
     3'b111:
@@ -189,6 +194,7 @@ begin
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
+        $write("expect: %d\n", rs * rt);
         $display;
       end
     default:

@@ -17,7 +17,7 @@ wire [SIZE-1:0] out_rsdiv4;
 wire [SIZE-1:0] out_rsmul2;
 wire [SIZE-1:0] out_mul;
 
-wire [3-1:0] op_code_n;
+wire [8-1:0] out_dec;
 wire [SIZE-1:0] and_out_add;
 wire [SIZE-1:0] and_out_sub;
 wire [SIZE-1:0] and_out_inc;
@@ -74,24 +74,60 @@ MUL mul_0 (
 
 
 // TODO: Quad 3bits Mux here
-assign rd = op_code === 3'b000 ? out_add : out_mul;
-// Not_1bit_in_nor not_1bit_in_nor_0 (op_code_n[0], op_code[0]);
-// Not_1bit_in_nor not_1bit_in_nor_1 (op_code_n[1], op_code[1]);
-// Not_1bit_in_nor not_1bit_in_nor_2 (op_code_n[2], op_code[2]);
+//assign rd = op_code === 3'b110 ? out_rsmul2 : out_mul;
+Decoder_3x8_in_nor dec_3x8_in_nor (
+    .out(out_dec),
+    .sel(op_code)
+);
 
-// And_4bits_in_nor and_4bits_in_nor_0 (and_out_add, {out_add, op_code_n[2], op_code_n[1], op_code_n[0]});
-// And_4bits_in_nor and_4bits_in_nor_1 (and_out_sub, {out_sub, op_code_n[2], op_code_n[1], op_code[0]});
-// And_4bits_in_nor and_4bits_in_nor_2 (and_out_inc, {out_inc, op_code_n[2], op_code[1], op_code_n[0]});
-// And_4bits_in_nor and_4bits_in_nor_3 (and_out_bitwise_nor, {out_bitwise_nor, op_code_n[2], op_code[1], op_code[0]});
-// And_4bits_in_nor and_4bits_in_nor_4 (and_out_bitwise_nand, {out_bitwise_nand, op_code[2], op_code_n[1], op_code_n[0]});
-// And_4bits_in_nor and_4bits_in_nor_5 (and_out_rsdiv4, {out_rsdiv4, op_code[2], op_code_n[1], op_code[0]});
-// And_4bits_in_nor and_4bits_in_nor_6 (and_out_rsmul2, {out_rsmul2, op_code[2], op_code[1], op_code_n[0]});
-// And_4bits_in_nor and_4bits_in_nor_7 (and_out_mul, {out_mul, op_code[2], op_code[1], op_code[0]});
 
-// Or_8bits_in_nor or_8bits_in_nor_0 (rd, {and_out_add, and_out_sub, and_out_inc, and_out_bitwise_nor, and_out_bitwise_nand, and_out_rsdiv4, and_out_rsmul2, and_out_mul});
+And_4bits_fanout and_4bits_fanout_0 (.out(and_out_add), .in(out_add), .fan(out_dec[0]));
+And_4bits_fanout and_4bits_fanout_1 (.out(and_out_sub), .in(out_sub), .fan(out_dec[1]));
+And_4bits_fanout and_4bits_fanout_2 (.out(and_out_inc), .in(out_inc), .fan(out_dec[2]));
+And_4bits_fanout and_4bits_fanout_3 (.out(and_out_bitwise_nor), .in(out_bitwise_nor), .fan(out_dec[3]));
+And_4bits_fanout and_4bits_fanout_4 (.out(and_out_bitwise_nand), .in(out_bitwise_nand), .fan(out_dec[4]));
+And_4bits_fanout and_4bits_fanout_5 (.out(and_out_rsdiv4), .in(out_rsdiv4), .fan(out_dec[5]));
+And_4bits_fanout and_4bits_fanout_6 (.out(and_out_rsmul2), .in(out_rsmul2), .fan(out_dec[6]));
+And_4bits_fanout and_4bits_fanout_7 (.out(and_out_mul), .in(out_mul), .fan(out_dec[7]));
+
+Or_4x8_4bits_in_nor or_4x8_4bits_in_nor_0 (rd, {and_out_add, and_out_sub, and_out_inc, and_out_bitwise_nor, and_out_bitwise_nand, and_out_rsdiv4, and_out_rsmul2, and_out_mul});
+
+    
+//    always @(rs or rt) begin
+//        $display("[Check]\n");
+//        $write("sel: %3b\n", op_code);
+//        $write("inc: %4b\n", out_inc);
+//        $write("out: %4b\n", and_out_inc);
+//        $write("rd: %4b\n", rd);
+//        $write("add: %4b\n", and_out_add);
+//        $write("sub: %4b\n", and_out_sub);
+//        $write("nor: %4b\n", and_out_bitwise_nor);
+//        $write("nand: %4b\n", and_out_bitwise_nand);
+//        $write("rsdiv4: %4b\n", and_out_rsdiv4);
+//        $write("rsmul2: %4b\n", and_out_rsmul2);
+//        $write("mul: %4b\n", and_out_mul);
+//        $display;
+//    end
+    
 
 endmodule
 
+module And_4bits_fanout(out, in, fan);
+input [4-1:0] in;
+input fan;
+output [4-1:0] out;
+
+wire fan_n;
+wire [4-1:0] fanout;
+
+Not_1bit_in_nor not_1bit_in_nor_0 (fan_n, fan);
+Not_1bit_in_nor not_1bit_in_nor_1 (fanout[0], fan_n);
+Not_1bit_in_nor not_1bit_in_nor_2 (fanout[1], fan_n);
+Not_1bit_in_nor not_1bit_in_nor_3 (fanout[2], fan_n);
+Not_1bit_in_nor not_1bit_in_nor_4 (fanout[3], fan_n);
+And_1bit_in_nor and_1bit_in_nor_0 [4-1:0] (out, in, fanout);
+
+endmodule
 
 module ADD (out, in0, in1);
 
