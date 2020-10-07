@@ -66,6 +66,7 @@ MUL mul_0 (
 // TODO: Quad 3bits Mux here
 assign rd = op_code === 3'b000 ? out_add : out_sub;
 
+
 endmodule
 
 
@@ -77,9 +78,16 @@ input [SIZE-1:0] in0;
 input [SIZE-1:0] in1;
 output [SIZE-1:0] out;
 
+wire dummy_cout;
 
-// TODO: adder in nor here
-assign out = in0 + in1;
+// TODO: 4-bit adder in nor here
+// assign out = in0 + in1;
+FullAdder_4bist_in_nor fa_4bits_in_nor (
+  .sum(out),
+  .cout(dummy_cout),
+  .a(in0),
+  .b(in1)
+);
 
 endmodule
 
@@ -117,7 +125,6 @@ input [SIZE-1:0] in;
 output [SIZE-1:0] out;
 
 wire [SIZE-1:0] in_n;
-
 
 nor in_n_0 [SIZE-1:0] (in_n, in, in);
 
@@ -268,6 +275,11 @@ input [SIZE-1:0] in1;
 output [SIZE-1:0] out;
 
 // TODO: multiplier in nor here
-assign out = in0 * in1;
+// assign out = in0 * in1;
+Multiplier_4x4_4bits mul_4x4_8bits_in_nor (
+  .out(out),
+  .a(in0),
+  .b(in1)
+);
 
 endmodule
