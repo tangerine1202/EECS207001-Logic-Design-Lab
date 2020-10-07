@@ -76,8 +76,8 @@ MUL mul_0 (
 // TODO: Quad 3bits Mux here
 //assign rd = op_code === 3'b110 ? out_rsmul2 : out_mul;
 Decoder_3x8_in_nor dec_3x8_in_nor (
-    .out(out_dec),
-    .sel(op_code)
+  .out(out_dec),
+  .sel(op_code)
 );
 
 
@@ -138,13 +138,18 @@ input [SIZE-1:0] in1;
 output [SIZE-1:0] out;
 
 wire dummy_cout;
+wire const_zero;
+wire in0_0_n;
+
+nor in0_0_n_0 (in0_0_n, in0[0], in0[0]);
+nor const_zero_0 (const_zero, in0[0], in0_0_n);
 
 FullAdder_4bits_in_nor fa_4bits_in_nor (
   .sum(out),
   .cout(dummy_cout),
   .a(in0),
   .b(in1),
-  .cin(1'b0)
+  .cin(const_zero)
 );
 
 endmodule

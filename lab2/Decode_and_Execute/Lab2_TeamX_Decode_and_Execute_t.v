@@ -35,7 +35,6 @@ initial begin
     op_code = op_code + 3'b001;
   end
   */
-/*
   // ADD 
   op_code = 3'b000;
   {rs, rt} = 8'b0;
@@ -56,13 +55,14 @@ initial begin
   end
   // INC
   op_code = 3'b010;
-  {rs, rt} = 8'b0;
+  {rs, rt} = 8'b1;
   repeat (2 ** 8) begin
     @ (posedge CLK)
       Test;
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
+/*
   // BITWISE_NOR 
   op_code = 3'b011;
   {rs, rt} = 8'b0;
@@ -90,7 +90,6 @@ initial begin
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
-  */
   // RS MUL 2 
   op_code = 3'b110;
   {rs, rt} = 8'b0;
@@ -109,6 +108,7 @@ initial begin
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
+  */
   
   #1 $finish;
 end
@@ -139,12 +139,12 @@ begin
       end
     3'b010:
     // INC;
-      if (rd !== rs + 1'b1) begin
+      if (rd !== rs + 4'b1) begin
         $display("[ERROR] INC");
         $write("rs: %d\n", rs);
         $write("rt: %d\n", rt);
         $write("rd: %d\n", rd);
-        $write("expect: %d\n", rs + 1'b1);
+        $write("expect: %d\n", rs + 4'b1);
         $display;
       end
     3'b011:
