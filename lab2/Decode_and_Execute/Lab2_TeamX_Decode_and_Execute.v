@@ -2,59 +2,69 @@
 
 module Decode_and_Execute (op_code, rs, rt, rd);
 
-input [3-1:0] op_code;
-input [4-1:0] rs, rt;
-output [4-1:0] rd;
+parameter SIZE = 4;
 
-case (op_code)
-  3'b000:
-    ADD add_0 (
-      .in0(rs),
-      .in1(rt),
-      .out(rd)
-    );
-  3'b001:
-    SUB sub_0 (
-      .in0(rs),
-      .in1(rt),
-      .out(rd)
-    );
-  3'b010:
-    INC inc_0 (
-      .in(rs),
-      .out(rd)
-    );
-  3'b011:
-    Bitwise_Nor bitwise_nor_0 (
-      .in0(rs),
-      .in1(rt),
-      .out(rd)
-    );
-  3'b100:
-    Bitwise_Nand bitwise_nand_0 (
-      .in0(rs),
-      .in1(rt),
-      .out(rd)
-    );
-  3'b101:
-    RsDiv4 rsdiv4_0 (
-      .in(rs),
-      .out(rd)
-    );
-  3'b110:
-    RsMul2 rsmul2_0 (
-      .in(rs),
-      .out(rd)
-    );
-  3'b111:
-    MUL mul_0 (
-      .in0(rs),
-      .in1(rt),
-      .out(rd)
-    );
-  default:
-    assign rd = 4'bXXXX;
-endcase
+input [3-1:0] op_code;
+input [SIZE-1:0] rs, rt;
+output [SIZE-1:0] rd;
+
+wire [SIZE-1:0] out_add;
+wire [SIZE-1:0] out_sub;
+wire [SIZE-1:0] out_inc;
+wire [SIZE-1:0] out_bitwise_nor;
+wire [SIZE-1:0] out_bitwise_nand;
+wire [SIZE-1:0] out_rsdiv4;
+wire [SIZE-1:0] out_rsmul2;
+wire [SIZE-1:0] out_mul;
+
+ADD add_0 (
+  .in0(rs),
+  .in1(rt),
+  .out(out_add)
+);
+
+SUB sub_0 (
+  .in0(rs),
+  .in1(rt),
+  .out(out_sub)
+);
+
+INC inc_0 (
+  .in(rs),
+  .out(out_inc)
+);
+
+Bitwise_Nor bitwise_nor_0 (
+  .in0(rs),
+  .in1(rt),
+  .out(out_bitwise_nor)
+);
+
+Bitwise_Nand bitwise_nand_0 (
+  .in0(rs),
+  .in1(rt),
+  .out(out_bitwise_nand)
+);
+
+RsDiv4 rsdiv4_0 (
+  .in(rs),
+  .out(out_rsdiv4)
+);
+
+RsMul2 rsmul2_0 (
+  .in(rs),
+  .out(out_rsmul2)
+);
+
+MUL mul_0 (
+  .in0(rs),
+  .in1(rt),
+  .out(out_mul)
+);
+
+
+// TODO: Quad 3bits Mux here
+assign rd = op_code === 3'b000 ? out_add : out_sub;
 
 endmodule
 
@@ -67,10 +77,8 @@ input [SIZE-1:0] in0;
 input [SIZE-1:0] in1;
 output [SIZE-1:0] out;
 
-// reg added;
-// added = in0+in1;
-// assign out = added;
 
+// TODO: adder in nor here
 assign out = in0 + in1;
 
 endmodule
@@ -95,7 +103,7 @@ Two_complement in1_2sComplemnt_0 (
 ADD add_2sComplement (
   .in0(in0),
   .in1(in1_2sComplemnt),
-  .out(out),
+  .out(out)
 );
 
 endmodule
@@ -108,14 +116,15 @@ parameter SIZE = 4;
 input [SIZE-1:0] in;
 output [SIZE-1:0] out;
 
-wire [SIZE-1:0] inc_one;
+wire [SIZE-1:0] in_n;
 
 
-INC inc_0 (
-  .in(in),
-  .out(inc_one)
+nor in_n_0 [SIZE-1:0] (in_n, in, in);
+
+INC out_0 (
+  .in(in_n),
+  .out(out)
 );
-nor out_0 [SIZE-1:0] (out, inc_one, inc_one);
 
 endmodule
 
@@ -210,7 +219,7 @@ output [SIZE-1:0] out;
 wire [SIZE-1:0] in_n;
 // wire const_zero;
 
-nor in_n [SIZE-1:0] (in_n, in, in);
+nor in_n_0 [SIZE-1:0] (in_n, in, in);
 
 // To improve performance, direct generate const zero on out[2], out[3]
 // nor const_zero_0 (const_zero, in[0], in_n0]);
@@ -237,7 +246,7 @@ wire [SIZE-1-1:0] in_n;
 
 
 // in[3] didn't used, so -1
-nor in_n [SIZE-1-1:0] (in_n, in, in);
+nor in_n_0 [SIZE-1-1:0] (in_n, in[SIZE-1-1:0], in[SIZE-1-1:0]);
 
 // To improve performance, direct generate const zero on out[2], out[3]
 // nor const_zero_0 (const_zero, in[0], in_n[0]);
@@ -258,10 +267,7 @@ input [SIZE-1:0] in0;
 input [SIZE-1:0] in1;
 output [SIZE-1:0] out;
 
-// reg muled;
-// muled = in0*in1;
-// assign out = muled;
-
+// TODO: multiplier in nor here
 assign out = in0 * in1;
 
 endmodule
