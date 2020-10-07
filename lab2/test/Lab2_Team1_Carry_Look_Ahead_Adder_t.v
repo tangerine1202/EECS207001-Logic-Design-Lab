@@ -24,6 +24,14 @@ Carry_Look_Ahead_Adder cla_adder (
 always #1 CLK = ~CLK;
 
 initial begin
+  cin = 1'b0;
+  repeat (2 ** 8) begin
+    @ (posedge CLK)
+      Test;
+    @ (negedge CLK)
+      {a, b} = {a, b} + 8'b1;
+  end
+  cin = 1'b1;
   repeat (2 ** 8) begin
     @ (posedge CLK)
       Test;
