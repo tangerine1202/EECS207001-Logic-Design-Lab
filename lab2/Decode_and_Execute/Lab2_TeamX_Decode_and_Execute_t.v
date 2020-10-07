@@ -1,4 +1,4 @@
-`timescale 1ns/1ps
+`timescale 100ps/1ps
 
 module Decode_and_Execute_t;
 
@@ -22,7 +22,6 @@ Decode_and_Execute dae_0 (
 always #1 CLK = ~CLK;
 
 initial begin
-  /*
   op_code = 3'b000;
   repeat (2 ** 3) begin
     {rs, rt} = 8'b0;
@@ -34,7 +33,7 @@ initial begin
     end
     op_code = op_code + 3'b001;
   end
-  */
+  /*
   // ADD 
   op_code = 3'b000;
   {rs, rt} = 8'b0;
@@ -55,13 +54,14 @@ initial begin
   end
   // INC
   op_code = 3'b010;
-  {rs, rt} = 8'b1;
+  {rs, rt} = 8'b0;
   repeat (2 ** 8) begin
     @ (posedge CLK)
       Test;
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
+  */
 /*
   // BITWISE_NOR 
   op_code = 3'b011;
