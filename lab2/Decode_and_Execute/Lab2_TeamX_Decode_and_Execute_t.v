@@ -101,6 +101,7 @@ initial begin
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
+  */
   // MUL
   op_code = 3'b111;
   {rs, rt} = 8'b0;
@@ -110,7 +111,7 @@ initial begin
     @ (negedge CLK)
       {rs, rt} = {rs, rt} + 8'b1;
   end
-  */
+  
   #1 $finish;
 end
 

@@ -49,7 +49,7 @@ FullAdder_4bits_in_nor fa_4bit_in_nor_1 (
 );
 FullAdder_4bits_in_nor fa_4bit_in_nor_2 (
     .sum({dummy[2], dummy[1], dummy[0], out[3]}),
-    .cout(out[3]),
+    .cout(dummy[3]),
     .a(fa_a12),
     .b(and_a3b),
     .cin(1'b0)

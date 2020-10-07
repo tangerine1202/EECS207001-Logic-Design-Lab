@@ -74,21 +74,21 @@ MUL mul_0 (
 
 
 // TODO: Quad 3bits Mux here
-// assign rd = op_code === 3'b000 ? out_add : out_sub;
-Not_1bit_in_nor not_1bit_in_nor_0 (op_code_n[0], op_code[0]);
-Not_1bit_in_nor not_1bit_in_nor_1 (op_code_n[1], op_code[1]);
-Not_1bit_in_nor not_1bit_in_nor_2 (op_code_n[2], op_code[2]);
+assign rd = op_code === 3'b000 ? out_add : out_mul;
+// Not_1bit_in_nor not_1bit_in_nor_0 (op_code_n[0], op_code[0]);
+// Not_1bit_in_nor not_1bit_in_nor_1 (op_code_n[1], op_code[1]);
+// Not_1bit_in_nor not_1bit_in_nor_2 (op_code_n[2], op_code[2]);
 
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_add, {out_add, op_code_n[2], op_code_n[1], op_code_n[0]});
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_sub, {out_sub, op_code_n[2], op_code_n[1], op_code[0]});
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_inc, {out_inc, op_code_n[2], op_code[1], op_code_n[0]});
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_bitwise_nor, {out_bitwise_nor, op_code_n[2], op_code[1], op_code[0]});
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_bitwise_nand, {out_bitwise_nand, op_code[2], op_code_n[1], op_code_n[0]});
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_rsdiv4, {out_rsdiv4, op_code[2], op_code_n[1], op_code[0]});
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_rsmul2, {out_rsmul2, op_code[2], op_code[1], op_code_n[0]});
-And_4bits_in_nor and_4bits_in_nor_0 (and_out_mul, {out_mul, op_code[2], op_code[1], op_code[0]});
+// And_4bits_in_nor and_4bits_in_nor_0 (and_out_add, {out_add, op_code_n[2], op_code_n[1], op_code_n[0]});
+// And_4bits_in_nor and_4bits_in_nor_1 (and_out_sub, {out_sub, op_code_n[2], op_code_n[1], op_code[0]});
+// And_4bits_in_nor and_4bits_in_nor_2 (and_out_inc, {out_inc, op_code_n[2], op_code[1], op_code_n[0]});
+// And_4bits_in_nor and_4bits_in_nor_3 (and_out_bitwise_nor, {out_bitwise_nor, op_code_n[2], op_code[1], op_code[0]});
+// And_4bits_in_nor and_4bits_in_nor_4 (and_out_bitwise_nand, {out_bitwise_nand, op_code[2], op_code_n[1], op_code_n[0]});
+// And_4bits_in_nor and_4bits_in_nor_5 (and_out_rsdiv4, {out_rsdiv4, op_code[2], op_code_n[1], op_code[0]});
+// And_4bits_in_nor and_4bits_in_nor_6 (and_out_rsmul2, {out_rsmul2, op_code[2], op_code[1], op_code_n[0]});
+// And_4bits_in_nor and_4bits_in_nor_7 (and_out_mul, {out_mul, op_code[2], op_code[1], op_code[0]});
 
-Or_8bits_in_nor or_8bits_in_nor_0 (rd, {and_out_add, and_out_sub, and_out_inc, and_out_bitwise_nor, and_out_bitwise_nand, and_out_rsdiv4, and_out_rsmul2, and_out_mul});
+// Or_8bits_in_nor or_8bits_in_nor_0 (rd, {and_out_add, and_out_sub, and_out_inc, and_out_bitwise_nor, and_out_bitwise_nand, and_out_rsdiv4, and_out_rsmul2, and_out_mul});
 
 endmodule
 
@@ -103,13 +103,12 @@ output [SIZE-1:0] out;
 
 wire dummy_cout;
 
-// TODO: 4-bit adder in nor here
-// assign out = in0 + in1;
-FullAdder_4bist_in_nor fa_4bits_in_nor (
+FullAdder_4bits_in_nor fa_4bits_in_nor (
   .sum(out),
   .cout(dummy_cout),
   .a(in0),
-  .b(in1)
+  .b(in1),
+  .cin(1'b0)
 );
 
 endmodule
@@ -297,9 +296,7 @@ input [SIZE-1:0] in0;
 input [SIZE-1:0] in1;
 output [SIZE-1:0] out;
 
-// TODO: multiplier in nor here
-// assign out = in0 * in1;
-Multiplier_4x4_4bits mul_4x4_8bits_in_nor (
+Multiplier_4x4_4bits_in_nor mul_4x4_4bits_in_nor (
   .out(out),
   .a(in0),
   .b(in1)
