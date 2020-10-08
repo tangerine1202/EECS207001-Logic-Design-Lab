@@ -50,14 +50,14 @@ wire [3-1:0] sel_n;
 
 Not_in_nor not0 [3-1:0] (sel_n, sel);
 
-And_in_nor and0 (out[0], sel_n[2], sel_n[1], sel_n[0]);
-And_in_nor and1 (out[1], sel_n[2], sel_n[1], sel[0]);
-And_in_nor and2 (out[2], sel_n[2], sel[1], sel_n[0]);
-And_in_nor and3 (out[3], sel_n[2], sel[1], sel[0]);
-And_in_nor and4 (out[4], sel[2], sel_n[1], sel_n[0]);
-And_in_nor and5 (out[5], sel[2], sel_n[1], sel[0]);
-And_in_nor and6 (out[6], sel[2], sel[1], sel_n[0]);
-And_in_nor and7 (out[7], sel[2], sel[1], sel[0]);
+And_3bits_in_nor and0 (out[0], sel_n[2], sel_n[1], sel_n[0]);
+And_3bits_in_nor and1 (out[1], sel_n[2], sel_n[1], sel[0]);
+And_3bits_in_nor and2 (out[2], sel_n[2], sel[1], sel_n[0]);
+And_3bits_in_nor and3 (out[3], sel_n[2], sel[1], sel[0]);
+And_3bits_in_nor and4 (out[4], sel[2], sel_n[1], sel_n[0]);
+And_3bits_in_nor and5 (out[5], sel[2], sel_n[1], sel[0]);
+And_3bits_in_nor and6 (out[6], sel[2], sel[1], sel_n[0]);
+And_3bits_in_nor and7 (out[7], sel[2], sel[1], sel[0]);
 
 endmodule
 
@@ -98,6 +98,23 @@ nor nor1 (out, or_n, or_n);
 
 endmodule
 
+module And_3bits_in_nor (out, in0, in1, in2);
+
+input in0;
+input in1;
+input in2;
+output out;
+
+wire in0_n;
+wire in1_n;
+wire in2_n;
+
+nor nor0 (in0_n, in0, in0);
+nor nor1 (in1_n, in1, in1);
+nor nor2 (in2_n, in2, in2);
+nor nor3 (out, in0_n, in1_n, in2_n);
+
+endmodule
 
 module And_in_nor (out, in0, in1);
 
