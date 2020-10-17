@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module Mux_1bit_in_nor (out, in1, in0, sel);
+module Mux_2x1_1bit_in_nor (out, in1, in0, sel);
 
 input in0;
 input in1;
