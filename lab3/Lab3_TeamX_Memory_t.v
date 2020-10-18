@@ -29,20 +29,77 @@ Memory mem_0 (
 always #(CYC/2) CLK = ~CLK;
 
 initial begin
-  repeat(2 ** 4) begin
-    // @ (posedge CLK)
-    @ (negedge CLK)
-      Test;
+  // No Read Write
+  repeat (2 ** 2) begin
+    @ (negedge CLK) begin
+      Test(
+        .read(0), 
+        .write(0)
+      );
+    end
+  end
+  // Read Write at the same time
+  repeat (2 ** 2) begin
+    @ (negedge CLK) begin
+      Test(
+        .read(1), 
+        .write(1)
+      );
+    end
+  end
+
+  repeat(2 ** 2) begin
+    // Write
+    repeat(2 ** 3) begin
+      @ (negedge CLK) begin
+        Test(
+          .read(0), 
+          .write(1)
+        );
+      end
+    end
+    // Read  
+    repeat(2 ** 3) begin
+      @ (negedge CLK) begin
+        Test(
+          .read(1), 
+          .write(0)
+        );
+      end
+    end
+  end
+
+  // No Read Write
+  repeat (2 ** 2) begin
+    @ (negedge CLK) begin
+      Test(
+        .read(0), 
+        .write(0)
+      );
+    end
+  end
+  // Read Write at the same time
+  repeat (2 ** 2) begin
+    @ (negedge CLK) begin
+      Test(
+        .read(1), 
+        .write(1)
+      );
+    end
   end
   $finish;
 end
 
 task Test;
-begin
-  ren = $urandom_range(0, 1);
-  wen = $urandom_range(0, 1);
-  addr = $urandom_range(0, 128-1);
-  din = $urandom_range(0, 256-1);
-end
+    input read;
+    input write;
+    begin
+      ren = read;
+      wen = write;
+      // FIXME: large range is hard to test, need to figure out a better ways
+      addr = $urandom_range(0, 16-1);
+      din = $urandom_range(0, 256-1);
+    end
+endtask
 
 endmodule
