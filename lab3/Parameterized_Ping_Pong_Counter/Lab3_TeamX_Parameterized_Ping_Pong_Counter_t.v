@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module Parameterized_Ping_Pong_Counter ();
+module Parameterized_Ping_Pong_Counter_t ();
 reg clk = 0;
 reg rst_n = 1;
 reg enable = 1;
@@ -9,7 +9,7 @@ reg [4-1:0] max = 15, min = 15;
 wire direction;
 wire [4-1:0] out;
 
-Parameterized_Ping_Pong_Counter_t pppc (
+Parameterized_Ping_Pong_Counter pppc (
     .clk(clk), 
     .rst_n(rst_n), 
     .enable(enable), 
