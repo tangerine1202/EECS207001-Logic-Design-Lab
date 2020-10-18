@@ -1,3 +1,4 @@
+// FIXME: untested, may un-runable or act incorrect.
 `timescale 1ns/1ps
 
 module Mux_4x1_8bits_t ();
@@ -22,7 +23,7 @@ Mux_4x1_8bits mux_4x1_8bits (
 
 
 initial begin
-  initialize;
+  initialize();
   #1
   repeat(SIZE_M) begin
     #1 sel = sel + 2'b1;
@@ -31,7 +32,7 @@ initial begin
 end
 
 
-task initialize begin
+task initialize;
   $display("init start");
   counter = 4'b0;
   for(i=0; i<SIZE_M; i=i+1) begin
@@ -40,4 +41,6 @@ task initialize begin
     $display("in[%0d] = %0d", i, counter);
   end
   $display("init end");
-end
+endtask
+
+endmodule

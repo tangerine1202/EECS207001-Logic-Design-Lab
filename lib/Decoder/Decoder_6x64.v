@@ -1,3 +1,4 @@
+// FIXME: untested, may un-runable or act incorrect.
 `timescale 1ns/1ps
 
 module Decoder_6x64 (out, sel);

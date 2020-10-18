@@ -1,3 +1,4 @@
+// FIXME: untested, may un-runable or act incorrect.
 `timescale 1ns/1ps
 
 module Mux_4x1_8bits (out, in, sel);

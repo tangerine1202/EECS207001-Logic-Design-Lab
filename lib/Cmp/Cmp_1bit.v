@@ -16,14 +16,14 @@ wire eq_cur;
 wire lt_cur;
 
 not (b_n, b);
-and (gt_cur, a, b_n)
-or (gt, gt_cur, gt_up)
+and (gt_cur, a, b_n);
+or (gt, gt_cur, gt_up);
 
-xnor (eq_cur, a, b)
-and (eq, eq_cur, eq_up)
+xnor (eq_cur, a, b);
+and (eq, eq_cur, eq_up);
 
 not (a_n, a);
-and (lt_cur, a_n, b)
-or (lt, lt_cur, lt_up)
+and (lt_cur, a_n, b);
+or (lt, lt_cur, lt_up);
 
 endmodule
