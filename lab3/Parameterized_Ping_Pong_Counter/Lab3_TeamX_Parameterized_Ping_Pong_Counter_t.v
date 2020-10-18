@@ -25,14 +25,34 @@ Parameterized_Ping_Pong_Counter pppc (
 );
 
 initial begin
-    reset();
     ta1();
-    
+    ta2();
+    ta3();
+
     $finish;
 end
 
+task ta3;
+begin
+    reset();
+    #(`CYC * 15);
+    #(`CYC * 4);
+end
+endtask
+
+task ta2;
+begin
+    reset();
+    #(`CYC * 6);
+    @ (negedge clk) flip = !flip;
+    @ (negedge clk) flip = !flip;        
+    #(`CYC * 4);
+end
+endtask
+
 task ta1;
 begin
+    reset();
     #(`CYC * 6);
     repeat (2*4) begin
         @ (negedge clk) flip = !flip;        

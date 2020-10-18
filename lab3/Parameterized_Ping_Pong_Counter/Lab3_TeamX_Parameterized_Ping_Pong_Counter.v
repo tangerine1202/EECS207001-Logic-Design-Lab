@@ -19,14 +19,24 @@ always @(posedge clk) begin
     end
     else begin
         if(flip == 1) begin
-            drct = !drct;
+            ch_drct();
         end
         if (enable && max > min) begin
-            if (drct == 1 && cnt <= max) begin
-                cnt = cnt + 1'b1; 
+            if (drct) begin
+                if(cnt < max)
+                    cnt = cnt + 1'b1;
+                else if (cnt == max) begin
+                    ch_drct();
+                    cnt = cnt - 1'b1; 
+                end
             end
-            else if (drct == 0 && cnt >= min) begin
-                cnt = cnt - 1'b1;
+            else begin
+                if(cnt > min)
+                    cnt = cnt - 1'b1;
+                else if (cnt == min) begin
+                    ch_drct();
+                    cnt = cnt + 1'b1; 
+                end
             end
         end
     end
@@ -34,5 +44,11 @@ end
 
 assign direction = drct;
 assign out = cnt;
+
+task ch_drct;
+begin
+    drct = !drct;
+end
+endtask
 
 endmodule
