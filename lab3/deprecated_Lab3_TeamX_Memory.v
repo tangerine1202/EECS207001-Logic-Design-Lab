@@ -1,3 +1,4 @@
+// FIXME: this file is deprecated at 10.18.2020, it may no be able to run or act correctly.
 `timescale 1ns/1ps
 
 module Memory (clk, ren, wen, addr, din, dout);
