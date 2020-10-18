@@ -1,16 +1,15 @@
 `timescale 1ns/1ps
 
+`define CYC 4
+
 module Memory_t ();
 
 // # of words
 parameter DEPTH = 128;
 // # bits per words
 parameter WIDTH = 8;
-// cycle
-parameter CYC = 4;
 
-reg CLK = 1;
-
+reg clk = 1'b1;
 reg ren = 1'b0;
 reg wen = 1'b0;
 reg [7-1:0] addr = 7'b0;
@@ -18,7 +17,7 @@ reg [WIDTH-1:0] din = 8'b0;
 wire [WIDTH-1:0] dout;
 
 Memory mem_0 (
-  .clk(CLK),
+  .clk(clk),
   .ren(ren),
   .wen(wen),
   .addr(addr),
@@ -26,12 +25,12 @@ Memory mem_0 (
   .dout(dout)
 );
 
-always #(CYC/2) CLK = ~CLK;
+always #(`CYC/2) clk = ~clk;
 
 initial begin
   // No Read Write
   repeat (2 ** 2) begin
-    @ (negedge CLK) begin
+    @ (negedge clk) begin
       Test(
         .read(0), 
         .write(0)
@@ -40,7 +39,7 @@ initial begin
   end
   // Read Write at the same time
   repeat (2 ** 2) begin
-    @ (negedge CLK) begin
+    @ (negedge clk) begin
       Test(
         .read(1), 
         .write(1)
@@ -51,7 +50,7 @@ initial begin
   repeat(2 ** 2) begin
     // Write
     repeat(2 ** 3) begin
-      @ (negedge CLK) begin
+      @ (negedge clk) begin
         Test(
           .read(0), 
           .write(1)
@@ -60,7 +59,7 @@ initial begin
     end
     // Read  
     repeat(2 ** 3) begin
-      @ (negedge CLK) begin
+      @ (negedge clk) begin
         Test(
           .read(1), 
           .write(0)
@@ -71,7 +70,7 @@ initial begin
 
   // No Read Write
   repeat (2 ** 2) begin
-    @ (negedge CLK) begin
+    @ (negedge clk) begin
       Test(
         .read(0), 
         .write(0)
@@ -80,7 +79,7 @@ initial begin
   end
   // Read Write at the same time
   repeat (2 ** 2) begin
-    @ (negedge CLK) begin
+    @ (negedge clk) begin
       Test(
         .read(1), 
         .write(1)
