@@ -11,23 +11,22 @@ output [4-1:0] out;
 
 reg drct;
 reg [4-1:0] cnt;
-reg f;
 
-always @(posedge clk or negedge rst_n) begin
+always @(posedge clk) begin
     if (rst_n == 0) begin
-        drct <= 1'b1;
-        cnt <= min;
+        drct = 1'b1;
+        cnt = min;
     end
     else begin
-        if (flip == 1) begin
-            f <= 1'b1;
+        if(flip == 1) begin
+            drct = !drct;
         end
         if (enable && max > min) begin
             if (drct == 1 && cnt <= max) begin
-                cnt <= cnt + 1'b1; 
+                cnt = cnt + 1'b1; 
             end
             else if (drct == 0 && cnt >= min) begin
-                cnt <= cnt - 1'b1;
+                cnt = cnt - 1'b1;
             end
         end
     end
