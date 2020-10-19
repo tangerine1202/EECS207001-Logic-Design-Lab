@@ -41,17 +41,17 @@ task random_change;
 begin
     reset();
     #(`CYC * 2);
-    max = $urandom_rage(15);
-    min = $urandom_rage(15);
+    max = $urandom_range(15);
+    min = $urandom_range(15);
     #(`CYC * 10);
-    max = $urandom_rage(15);
-    min = $urandom_rage(15);
+    max = $urandom_range(15);
+    min = $urandom_range(15);
     #(`CYC * 10);
-    max = $urandom_rage(15);
-    min = $urandom_rage(15);
+    max = $urandom_range(15);
+    min = $urandom_range(15);
     #(`CYC * 10);
-    max = $urandom_rage(15);
-    min = $urandom_rage(15);
+    max = $urandom_range(15);
+    min = $urandom_range(15);
     #(`CYC * 10);
 end
 endtask
