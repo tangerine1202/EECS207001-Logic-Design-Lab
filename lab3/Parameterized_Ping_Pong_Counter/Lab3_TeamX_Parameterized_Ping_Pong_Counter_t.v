@@ -29,6 +29,9 @@ initial begin
     ta2();
     ta3();
 
+    // TODO: max==min==output, hold value
+    // TODO: change max, min while counting
+
     $finish;
 end
 

@@ -13,6 +13,37 @@ reg drct;
 reg [4-1:0] cnt;
 
 always @(posedge clk) begin
+    if(rst_n == 0)
+        drct = 1'b1;
+    else begin
+        if(flip==1 || cnt==max || cnt==min)
+            ch_drct();
+    end
+end
+
+always @(posedge clk) begin
+    if(rst_n == 0)
+        cnt = min;
+    else begin
+        if (enable && max > min) begin
+            if (drct) begin
+                if(cnt < max)
+                    cnt = cnt + 1'b1;
+                else if (cnt == max)
+                    cnt = cnt - 1'b1; 
+            end
+            else begin
+                if(cnt > min)
+                    cnt = cnt - 1'b1;
+                else if (cnt == min)
+                    cnt = cnt + 1'b1; 
+            end
+        end
+    end
+end
+
+/*
+always @(posedge clk) begin
     if (rst_n == 0) begin
         drct = 1'b1;
         cnt = min;
@@ -41,6 +72,7 @@ always @(posedge clk) begin
         end
     end
 end
+*/
 
 assign direction = drct;
 assign out = cnt;
