@@ -28,12 +28,79 @@ initial begin
     ta1();
     ta2();
     ta3();
-
-    // TODO: max==min==output, hold value
-    // TODO: change max, min while counting
+    enable_chk();
+    bounce();
+    out_boundary();
+    max_min_out;
+    random_change();
 
     $finish;
 end
+
+task random_change;
+begin
+    reset();
+    #(`CYC * 2);
+    max = $urandom_rage(15);
+    min = $urandom_rage(15);
+    #(`CYC * 10);
+    max = $urandom_rage(15);
+    min = $urandom_rage(15);
+    #(`CYC * 10);
+    max = $urandom_rage(15);
+    min = $urandom_rage(15);
+    #(`CYC * 10);
+    max = $urandom_rage(15);
+    min = $urandom_rage(15);
+    #(`CYC * 10);
+end
+endtask
+
+task max_min_out;
+begin
+    reset();
+    #(`CYC * 2);
+    max = 10;
+    min = 2;
+    #(`CYC * 4);
+    @ (negedge clk) flip = !flip;
+    @ (negedge clk) flip = !flip;
+    #(`CYC * 2);
+    min = 10;
+    #(`CYC * 5);
+end
+endtask
+
+task out_boundary;
+begin
+    reset();
+    #(`CYC * 8) max = 5;
+    #(`CYC * 2) max = 15;
+    @ (negedge clk) flip = !flip;
+    @ (negedge clk) flip = !flip;
+    #(`CYC * 2) min = 8;
+    #(`CYC * 2);
+    max = 15;
+    min = 0;
+    #(`CYC * 4);
+end
+endtask
+
+task bounce;
+begin
+    reset();
+    #(`CYC * 40);
+end
+endtask
+
+task enable_chk();
+begin
+    reset();
+    #(`CYC * 4) enable = 1'b0;
+    #(`CYC * 4) enable = 1'b1;
+    #(`CYC * 4);
+end
+endtask
 
 task ta3;
 begin
