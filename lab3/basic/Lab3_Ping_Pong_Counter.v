@@ -1,14 +1,18 @@
 `timescale 1ns/1ps
 
 module Ping_Pong_Counter (clk, rst_n, enable, direction, out);
-input clk, rst_n;
+
+input clk;
+input rst_n;
 input enable;
 output reg direction;
 output reg [4-1:0] out;
 
+reg next_direction;
 reg [4-1:0] next_out;
-reg next_dr;
 
+
+// Sequential Circuit
 always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         out <= 4'b0001;
@@ -21,40 +25,39 @@ always @(posedge clk) begin
     end
 end
 
+// Sequential Circuit
 always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         direction <= 1'b1;
     end
     else begin
-        direction <= next_dr;
+        direction <= next_direction;
     end
 end
 
-
-// CC: calculate 'next_out' which depend on 'direction'
+// Combinational Circuit
+// determine next direction by last 'out'
 always @(*) begin
-    next_out = out;
-    if (next_dr == 1'b1) begin
+    if (out == 4'b0000) begin
+        next_direction = 1'b1;
+    end
+    else if (out == 4'b1111) begin
+        next_direction = 1'b0;
+    end
+    else begin
+        next_direction = direction;
+    end
+end
+
+// Combinational Circuit
+// determine next out by next direction
+always @(*) begin
+    if (next_direction == 1'b1) begin
         next_out = out + 4'b1;
     end
     else begin
         next_out = out - 4'b1;
     end
 end
-
-// CC: calculate 'direction' which depend on 'out'
-always @(*) begin
-    next_dr = direction;
-    if (out == 4'b0000) begin
-        next_dr = 1'b1;
-    end
-    else if (out == 4'b1111) begin
-        next_dr = 1'b0;
-    end
-    else begin
-        next_dr = next_dr;
-    end
-end
-
 
 endmodule

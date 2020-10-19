@@ -1,7 +1,9 @@
 `timescale 1ns/1ps
 
 module Clock_Divider (clk, rst_n, sel, clk1_2, clk1_4, clk1_8, clk1_3, dclk);
-input clk, rst_n;
+
+input clk;
+input rst_n;
 input [2-1:0] sel;
 output clk1_2;
 output clk1_4;
@@ -9,11 +11,13 @@ output clk1_8;
 output clk1_3;
 output reg dclk;
 
-reg [4-1:0] cnt_2;
-reg [4-1:0] cnt_4;
-reg [4-1:0] cnt_8;
-reg [4-1:0] cnt_3;
+reg [4-1:0] cnt_2;      // count from 0 to 1
+reg [4-1:0] cnt_4;      // count from 0 to 3
+reg [4-1:0] cnt_8;      // count from 0 to 7
+reg [4-1:0] cnt_3;      // count from 0 to 2
 
+
+// Sequential Circuit
 always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         cnt_2 <= 4'b0;
@@ -45,12 +49,13 @@ always @(posedge clk) begin
     end
 end
 
-
+// Combinational Circuit
 assign clk1_2 = (cnt_2 == 4'd1 ? 1'b1 : 1'b0);
 assign clk1_4 = (cnt_4 == 4'd3 ? 1'b1 : 1'b0);
 assign clk1_8 = (cnt_8 == 4'd7 ? 1'b1 : 1'b0);
 assign clk1_3 = (cnt_3 == 4'd2 ? 1'b1 : 1'b0);
 
+// Combinational Circuit
 always @(*) begin
     case (sel)
         2'b00: dclk = clk1_3;
