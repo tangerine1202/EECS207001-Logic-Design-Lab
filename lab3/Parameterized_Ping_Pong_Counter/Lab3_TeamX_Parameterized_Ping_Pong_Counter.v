@@ -6,81 +6,52 @@ input enable;
 input flip;
 input [4-1:0] max;
 input [4-1:0] min;
-output direction;
-output [4-1:0] out;
+output reg direction;
+output reg [4-1:0] out;
 
-reg drct;
-reg [4-1:0] cnt;
+wire next_direction;
+wire [4-1:0] next_out;
 
+// Sequential: direction
 always @(posedge clk) begin
-    if(rst_n == 0)
-        drct = 1'b1;
-    else begin
-        if(flip==1 || cnt==max || cnt==min)
-            ch_drct();
-    end
+    if (rst_n == 1'b0)
+        direction <= 1'b1;
+    else
+        direction <= next_direction;
 end
 
+// Sequential: out
 always @(posedge clk) begin
-    if(rst_n == 0)
-        cnt = min;
-    else begin
-        if (enable && max > min) begin
-            if (drct) begin
-                if(cnt < max)
-                    cnt = cnt + 1'b1;
-                else if (cnt == max)
-                    cnt = cnt - 1'b1; 
-            end
-            else begin
-                if(cnt > min)
-                    cnt = cnt - 1'b1;
-                else if (cnt == min)
-                    cnt = cnt + 1'b1; 
-            end
-        end
-    end
+    if (rst_n == 1'b0)
+        out <= min;
+    else 
+        out <= next_out;
 end
 
-/*
-always @(posedge clk) begin
-    if (rst_n == 0) begin
-        drct = 1'b1;
-        cnt = min;
-    end
-    else begin
-        if(flip == 1) begin
-            ch_drct();
-        end
-        if (enable && max > min) begin
-            if (drct) begin
-                if(cnt < max)
-                    cnt = cnt + 1'b1;
-                else if (cnt == max) begin
-                    ch_drct();
-                    cnt = cnt - 1'b1; 
-                end
-            end
-            else begin
-                if(cnt > min)
-                    cnt = cnt - 1'b1;
-                else if (cnt == min) begin
-                    ch_drct();
-                    cnt = cnt + 1'b1; 
-                end
-            end
-        end
-    end
+// Combinational: next_direction
+always @(*) begin
+    if (flip == 1'b1)
+        next_direction = !direction;
+    else if (out == min)
+        next_direction = 1'b1;
+    else if (out == max)
+        next_direction = 1'b0;
+    else 
+        next_direction = direction;
 end
-*/
 
-assign direction = drct;
-assign out = cnt;
-
-task ch_drct;
-begin
-    drct = !drct;
+// Combinational: next_out
+always @(*) begin
+    if (enable && max > min) begin
+        if (next_direction == 1'b1 && cnt < max) 
+            next_out = out + 1'b1;
+        else if (next_direction == 1'b0 && cnt > min)
+            next_out = out - 1'b1;
+        else 
+            next_out = out;
+    end 
+    else 
+        next_out = out;
 end
-endtask
 
 endmodule
