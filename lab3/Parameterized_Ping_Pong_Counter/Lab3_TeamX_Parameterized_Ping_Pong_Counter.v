@@ -9,8 +9,8 @@ input [4-1:0] min;
 output reg direction;
 output reg [4-1:0] out;
 
-wire next_direction;
-wire [4-1:0] next_out;
+reg next_direction;
+reg [4-1:0] next_out;
 
 // Sequential: direction
 always @(posedge clk) begin
@@ -43,9 +43,9 @@ end
 // Combinational: next_out
 always @(*) begin
     if (enable && max > min) begin
-        if (next_direction == 1'b1 && cnt < max) 
+        if (next_direction == 1'b1 && out < max) 
             next_out = out + 1'b1;
-        else if (next_direction == 1'b0 && cnt > min)
+        else if (next_direction == 1'b0 && out > min)
             next_out = out - 1'b1;
         else 
             next_out = out;
