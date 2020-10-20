@@ -164,18 +164,35 @@ initial begin
   $finish;
 end
 
+task PrintErr;
+begin
+   $display("[ERROR]");
+    $write("ren: %d\n", ren);
+    $write("wen: %d\n", wen);
+    $write("din: %d\n", din);
+    $write("addr: %d\n", addr);
+    $write("dout: %d\n", dout);
+    $write("out : %d\n", out);
+    $display;
+end
+endtask
 
 task Test;
   begin
-    if (dout !== out) begin
-      $display("[ERROR]");
-      $write("ren: %d\n", ren);
-      $write("wen: %d\n", wen);
-      $write("din: %d\n", din);
-      $write("addr: %d\n", addr);
-      $write("dout: %d\n", dout);
-      $write("out : %d\n", out);
-      $display;
+    // if (dout !== out) begin
+    if (ren && (mem[addr]!=dout) && !clk) begin
+      $display();
+      $write("[ren err]");
+      $display();
+      PrintErr();
+    end
+    else begin
+      if (!ren && wen && (mem[addr]!=din) && dout!=0) begin
+        $display();
+        $write("wen err");
+        $display();
+        PrintErr();
+      end
     end
   end
 endtask
@@ -191,7 +208,7 @@ task GenerateTest;
     wen = write;
     din = $urandom_range(0, 256-1);
     if (idx === -1) begin
-      addr = $uradmon_range(0, 128-1);
+      addr = $urandom_range(0, 128-1);
     end
     else if (idx === -2) begin
       addr = addr;
