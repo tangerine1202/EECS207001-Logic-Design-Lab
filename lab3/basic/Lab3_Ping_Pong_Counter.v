@@ -17,11 +17,8 @@ always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         out <= 4'b0001;
     end
-    else if (enable == 1'b1) begin
-        out <= next_out;
-    end
     else begin
-        out <= out;
+        out <= next_out;
     end
 end
 
@@ -52,11 +49,16 @@ end
 // Combinational Circuit
 // determine next out by next direction
 always @(*) begin
-    if (next_direction == 1'b1) begin
-        next_out = out + 4'b1;
+    if (enable == 1'b1) begin
+        if (next_direction == 1'b1) begin
+            next_out = out + 4'b1;
+        end
+        else begin
+            next_out = out - 4'b1;
+        end
     end
     else begin
-        next_out = out - 4'b1;
+        next_out = next_out;
     end
 end
 
