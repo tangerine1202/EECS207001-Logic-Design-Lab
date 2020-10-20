@@ -10,10 +10,10 @@ input [4-1:0] min;
 output [8-1:0] seg; // 0~6: ca~cg  7: dp
 output [4-1:0] an;
 
-reg flip_debounced;
-reg flip_one_pluse;
-reg rst_n_debounced;
-reg rst_n_one_pluse;
+wire flip_debounced;
+wire flip_one_pluse;
+wire rst_n_debounced;
+wire rst_n_one_pluse;
 
 wire clk_out;  // 0.5 s
 wire clk_refresh;  // 1 ms
@@ -55,7 +55,7 @@ Clock_divider clock_divider(
 
 Ping_pong_counter pppc(
     .out(out), 
-    .directoin(direction), 
+    .direction(direction), 
     .clk(clk_out), 
     .rst_n(rst_n_one_pluse), 
     .enable(enable), 
@@ -70,7 +70,8 @@ Select_Display select_display(
     .an(an),
     .cnt(out),
     .direction(direction),
-    .rst_n(rst_n_one_pluse)
+    .rst_n(rst_n_one_pluse),
+    .clk(clk_refresh)
 );
 
 endmodule
@@ -83,54 +84,42 @@ endmodule
 module Clock_divider (clk_out, clk_refresh, origin_clk, rst_n);
 
 input origin_clk;
-input rst_n
-output reg clk_out;
-output reg clk_refresh;
+input rst_n;
+output clk_out;
+output clk_refresh;
 
-reg [32-1:] next_cnt_out;
-reg [32-1:] next_cnt_refresh;
+parameter OUT_CLK = 50000000;
+parameter REFRESH_CLK = 100000;
+
+reg [32-1:0] next_cnt_out;
+reg [32-1:0] next_cnt_refresh;
 reg [32-1:0] cnt_out;      // 50,000,000 origin_clk => 1 clk_out
 reg [32-1:0] cnt_refresh;  // 100,000    origin_clk => 1 clk_refresh 
 
 // Sequential
 always @(posedge origin_clk) begin
     if (rst_n == 1'b0) begin
-        clk_out <= 1'b0;
-        clk_refresh <= 1'b0;
         cnt_out <= 32'b0;
         cnt_refresh <= 32'b0;
-        next_cnt_out <= 32'b0;
-        next_cnt_refresh <= 32'b0;
-    end else begin
-        cnt_out <= next_cnt_out;
-        cnt_refresh <= next_cnt_refresh;
+    end
+    else begin
+        if (cnt_out == OUT_CLK) begin
+            cnt_out <= 32'b0;
+        end
+        else begin
+            cnt_out <= cnt_out + 32'b1;
+        end
+        if (cnt_refresh == REFRESH_CLK) begin
+            cnt_refresh <= 32'b0;
+        end
+        else begin
+            cnt_refresh <= cnt_refresh + 32'b1;
+        end
     end
 end
 
-// Combinatioal: count next clock
-always @(*) begin
-    next_cnt_out = (cnt_out == 50000000) ? 32'b0; next_cnt_out + 32'b1;
-    next_cnt_refresh = (cnt_refresh == 100000) ? 32'b0; next_cnt_refresh + 32'b1;
-    dff_out = 
-end
-
-always @(posedge origin_clk) begin
-    if (cnt_out == 50000000) begin 
-        clk_out <= !clk_out;
-    end
-    else begin 
-        clk_out <= clk_out; 
-    end
-end
-
-always @(posedge origin_clk) begin
-    if (cnt_refresh == 100000) begin 
-        clk_refresh <= !clk_refresh;
-    end
-    else begin 
-        clk_refresh <= clk_refresh; 
-    end
-end
+assign clk_out = (cnt_out == OUT_CLK) ? 1'b1 : 1'b0;
+assign clk_refresh = (cnt_refresh == REFRESH_CLK) ? 1'b1 : 1'b0;
 
 endmodule
 
@@ -180,44 +169,45 @@ Seven_Segment_Display seven_segment_display(
     .seg(seg),
     .in(in),
     .sel(sel),
-    .rst_n(rst_n)
+    .clk(clk)
 );
 
 endmodule
 
-module Seven_Segment_Display (seg, in, sel, rst_n);
+module Seven_Segment_Display (seg, in, sel, clk);
 
 input [4-1:0] in;
 input sel;  // 0: direction  1: num
-input rst_n;
-output [8-1:0] seg; // 0~6: ca~cg  7: dp
+//input rst_n;
+input clk;
+output reg [8-1:0] seg; // 0~6: ca~cg  7: dp
 
-always ＠(*) begin
-    if (rst_n == 1'b0) begin
-        seg = 8'b11111111;
+// reg [8-1:0] next_seg;
+
+// Combinational: next seg
+always @(*) begin
+    if (sel == 2'b0) begin
+        if (in == 4'b1) begin
+            seg = 8'b1011100;  // ca, cb, cf 
+        end
+        else begin
+            seg = 8'b11100011;  // cc, cd, ce
+        end
     end 
     else begin
-        if (sel == 2'b0) begin
-            if (in == 4'b1) begin
-                seg = 8'b00111011;  // ca, cb, cf 
-            end
-            else begin
-                seg = 8'b11000111;  // cc, cd, ce
-            end
-        end else begin
-            case(in) 
-                4'd0: begin seg = 8'b00000011; end
-                4'd1: begin seg = 8'b10011111; end
-                4'd2: begin seg = 8'b00100101; end
-                4'd3: begin seg = 8'b00001101; end
-                4'd4: begin seg = 8'b10011001; end
-                4'd5: begin seg = 8'b01001001; end
-                4'd6: begin seg = 8'b01000001; end
-                4'd7: begin seg = 8'b00011111; end
-                4'd8: begin seg = 8'b00000001; end
-                4'd9: begin seg = 8'b00111001; end
-            endcase
-        end
+        case(in) 
+            4'd0: begin seg = 8'b11000000; end
+            4'd1: begin seg = 8'b11111001; end
+            4'd2: begin seg = 8'b10100100; end
+            4'd3: begin seg = 8'b10110000; end
+            4'd4: begin seg = 8'b10011001; end
+            4'd5: begin seg = 8'b10010010; end
+            4'd6: begin seg = 8'b10000010; end
+            4'd7: begin seg = 8'b11111000; end
+            4'd8: begin seg = 8'b10000000; end
+            4'd9: begin seg = 8'b10011111; end
+            default: begin seg = 8'b11111111; end
+        endcase
     end
 end
 
@@ -257,10 +247,14 @@ end
 
 endmodule
 
-module Ping_pong_counter (out, directoin, clk, rst_n, enable, flip, max, min);
+module Ping_pong_counter (out, direction, clk, rst_n, enable, flip, max, min);
 
 input clk;
 input rst_n;
+input enable;
+input flip;
+input [4-1:0] max;
+input [4-1:0] min;
 output reg direction;
 output reg [4-1:0] out;
 
