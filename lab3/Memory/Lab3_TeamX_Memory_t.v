@@ -131,7 +131,7 @@ initial begin
       GenerateTest(.read(1), .write(1), idx);
     end
     @ (posedge clk) begin
-      Test(.read(1), .write(0), idx);
+      Test;
     end
   end
   // test mem[n-2, n-1]
@@ -140,7 +140,7 @@ initial begin
       GenerateTest(.read(1), .write(1), idx);
     end
     @ (posedge clk) begin
-      Test(.read(1), .write(0), idx);
+      Test;
     end
   end
 
