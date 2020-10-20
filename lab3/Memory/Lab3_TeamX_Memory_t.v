@@ -39,7 +39,7 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), idx);
+      GenerateTest(.read(1), .write(0), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -49,7 +49,7 @@ initial begin
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), idx);
+      GenerateTest(.read(1), .write(0), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -62,7 +62,7 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), idx);
+      GenerateTest(.read(1), .write(1), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -72,7 +72,7 @@ initial begin
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), idx);
+      GenerateTest(.read(1), .write(1), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -85,7 +85,7 @@ initial begin
   // write mem[0, 7]
   for (idx = 0; idx < 8; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), idx);
+      GenerateTest(.read(0), .write(1), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -95,7 +95,7 @@ initial begin
   // write mem[n-1-8, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-8; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), idx);
+      GenerateTest(.read(0), .write(1), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -105,7 +105,7 @@ initial begin
   // read mem[0, 7]
   for (idx = 0; idx < 8; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), idx);
+      GenerateTest(.read(1), .write(0), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -115,7 +115,7 @@ initial begin
   // read mem[n-1-8, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-8; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), idx);
+      GenerateTest(.read(1), .write(0), .idx(idx));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -128,16 +128,16 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), idx);
+      GenerateTest(.read(1), .write(1), .idx(idx));
     end
     @ (posedge clk) begin
-      Test(.read(1), .write(0), idx);
+      Test(.read(1), .write(0), .idx(idx));
     end
   end
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), idx);
+      GenerateTest(.read(1), .write(1), .idx(idx));
     end
     @ (posedge clk) begin
       Test(.read(1), .write(0), idx);
@@ -148,13 +148,13 @@ initial begin
   // Stochastic Test
   repeat (2 ** 6) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), -1);
+      GenerateTest(.read(0), .write(1), .idx(-1));
     end
     @ (posedge clk) begin
       Test;
     end
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), -2);
+      GenerateTest(.read(1), .write(0), .idx(-2));
     end
     @ (posedge clk) begin
       Test;
@@ -182,11 +182,11 @@ endtask
 
 
 task GenerateTest;
-  begin
     input read;
     input write;
     input idx;
     // generate
+    begin
     ren = read;
     wen = write;
     din = $urandom_range(0, 256-1);
