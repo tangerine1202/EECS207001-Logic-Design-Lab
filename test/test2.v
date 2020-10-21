@@ -339,9 +339,6 @@ end
 
 // Combinational: next_direction
 always @(*) begin
-    // if (flip == 1'b1)
-    //     next_direction = direction;
-    // else
     if (out == min) begin
         next_direction = 1'b1;
     end
@@ -356,11 +353,13 @@ end
 // Combinational: next_out
 always @(*) begin
     if (enable && (max > min)) begin
-        if (next_direction == 1'b1 && out < max) 
+        if (next_direction == 1'b1 && (out < max)) begin
             next_out = out + 4'b0001;
-        else if (next_direction == 1'b0 && out > min)
+        end
+        else if (next_direction == 1'b0 && (out > min)) begin
             next_out = out - 4'b0001;
-        else 
+        end
+        else begin
             next_out = out;
         end
     end 

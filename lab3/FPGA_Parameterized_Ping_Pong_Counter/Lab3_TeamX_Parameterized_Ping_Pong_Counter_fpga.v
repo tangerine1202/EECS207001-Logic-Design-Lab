@@ -362,7 +362,6 @@ always @(*) begin
             next_out = out - 4'b0001;
         else 
             next_out = out;
-        end
     end 
     else begin
         next_out = out;
