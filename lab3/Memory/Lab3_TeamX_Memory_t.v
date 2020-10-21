@@ -8,6 +8,9 @@ module Memory_t ();
 parameter DEPTH = 128;
 // # bits per words
 parameter WIDTH = 8;
+// addr_source: from input or from random
+parameter USE_INPUT_ADDR = 1'b0;
+parameter USE_RANDOM_ADDR = 1'b1;
 
 reg clk = 1'b1;
 reg ren = 1'b0;
@@ -17,7 +20,7 @@ reg [WIDTH-1:0] din = 8'b0;
 wire [WIDTH-1:0] dout;
 
 reg [WIDTH-1:0] out;
-reg [DEPTH-1:0] mem [WIDTH-1:0];
+reg [WIDTH-1:0] mem [DEPTH-1:0];
 
 integer idx = 0;
 integer check_addr = 0;
@@ -39,20 +42,18 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .idx(idx));
+      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
-      // Test(.read(1), .write(0), idx);
       Test;
     end
   end
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .idx(idx));
+      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
-      // Test(.read(1), .write(0), idx);
       Test;
     end
   end
@@ -62,20 +63,18 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .idx(idx));
+      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
-      // Test(.read(1), .write(0), idx);
       Test;
     end
   end
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .idx(idx));
+      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
-      // Test(.read(1), .write(0), idx);
       Test;
     end
   end
@@ -85,27 +84,25 @@ initial begin
   // write mem[0, 7]
   for (idx = 0; idx < 8; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), .idx(idx));
+      GenerateTest(.read(0), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
-      // Test(.read(1), .write(0), idx);
       Test;
     end
   end
   // write mem[n-1-8, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-8; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), .idx(idx));
+      GenerateTest(.read(0), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
-      // Test(.read(1), .write(0), idx);
       Test;
     end
   end
   // read mem[0, 7]
   for (idx = 0; idx < 8; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .idx(idx));
+      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -115,7 +112,7 @@ initial begin
   // read mem[n-1-8, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-8; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .idx(idx));
+      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -128,7 +125,7 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .idx(idx));
+      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
       Test;
@@ -137,7 +134,7 @@ initial begin
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .idx(idx));
+      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
     end
     @ (posedge clk) begin
       Test;
@@ -148,13 +145,13 @@ initial begin
   // Stochastic Test
   repeat (2 ** 6) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), .idx(-1));
+      GenerateTest(.read(0), .write(1), .addr_input(0), .addr_source(USE_RANDOM_ADDR));
     end
     @ (posedge clk) begin
       Test;
     end
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .idx(-2));
+      GenerateTest(.read(1), .write(0), .addr_input(0), .addr_source(USE_RANDOM_ADDR));
     end
     @ (posedge clk) begin
       Test;
@@ -167,14 +164,18 @@ end
 
 task Test;
   begin
+    // FIXME: solve undesired delay
+    // There will be a dout delay when read/write change, havn't find a good
+    // solution yet. Use clock/4 delay to solve for now.
+    # (`CYC/4)
     if (dout !== out) begin
       $display("[ERROR]");
       $write("ren: %d\n", ren);
       $write("wen: %d\n", wen);
       $write("din: %d\n", din);
       $write("addr: %d\n", addr);
-      $write("dout: %d\n", dout);
-      $write("out : %d\n", out);
+      $write("dout: %h\n", dout);
+      $write("out : %h\n", out);
       $display;
     end
   end
@@ -184,23 +185,21 @@ endtask
 task GenerateTest;
     input read;
     input write;
-    input idx;
+    input [7-1:0] addr_input;
+    input addr_source;
     // generate
     begin
     ren = read;
     wen = write;
     din = $urandom_range(0, 256-1);
-    if (idx === -1) begin
-      addr = $uradmon_range(0, 128-1);
-    end
-    else if (idx === -2) begin
-      addr = addr;
+    if (addr_source == USE_RANDOM_ADDR) begin
+      addr = $urandom_range(0, 128-1);
     end
     else begin
-      addr = idx;
+      addr = addr_input;
     end
 
-    // udpate
+    // udpate answer
     if (ren == 1'b1) begin
       out = mem[addr];
     end
@@ -213,5 +212,6 @@ task GenerateTest;
     end
   end
 endtask
+
 
 endmodule
