@@ -35,12 +35,15 @@ always @(*) begin
             next_direction = !direction;
         end
         else begin 
-            if (out == min)
+            if (out == min) begin
                 next_direction = 1'b1;
-            else if (out == max)
+            end
+            else if (out == max) begin
                 next_direction = 1'b0;
-            else 
+            end
+            else begin 
                 next_direction = direction;
+            end
         end
     end
     else begin
