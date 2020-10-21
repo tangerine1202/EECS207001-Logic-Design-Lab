@@ -54,15 +54,19 @@ end
 // Combinational: next_out
 always @(*) begin
     if (enable && (max > min)) begin
-        if (next_direction == 1'b1 && out < max) 
+        if (next_direction == 1'b1 && out < max) begin
             next_out = out + 1'b1;
-        else if (next_direction == 1'b0 && out > min)
+        end
+        else if (next_direction == 1'b0 && out > min) begin
             next_out = out - 1'b1;
-        else 
+        end
+        else begin 
             next_out = out;
+        end
     end 
-    else 
+    else begin
         next_out = out;
+    end
 end
 
 endmodule
