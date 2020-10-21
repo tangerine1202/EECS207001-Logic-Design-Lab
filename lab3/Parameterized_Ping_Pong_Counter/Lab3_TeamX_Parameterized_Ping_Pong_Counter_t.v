@@ -31,7 +31,7 @@ initial begin
     enable_chk();
     bounce();
     out_boundary();
-    max_min_out;
+    max_min_out();
     random_change();
 
     $finish;
