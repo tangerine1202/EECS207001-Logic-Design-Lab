@@ -22,15 +22,17 @@ always @(posedge clk) begin
       // mem[addr] <= mem[addr];
       dout <= mem[addr];
     end
-    else if (wen == 1'b1) begin
-      // Write 'din' to 'mem'
-      mem[addr] <= din;
-      dout <= 8'b0;
-    end
     else begin
-      // Do nothing
-      // mem <= mem;
-      dout <= 8'b0;
+      if (wen == 1'b1) begin
+        // Write 'din' to 'mem'
+        mem[addr] <= din;
+        dout <= 8'b0;
+      end
+      else begin
+        // Do nothing
+        // mem <= mem;
+        dout <= 8'b0;
+      end
     end
 end
 

@@ -25,4 +25,10 @@ end
 
 assign out = dff[4];
 
+always @(dff) begin
+    $display();
+    $write("Dff: %5b,  d1d4: %b", dff, d1_xor_d4);
+    $display();
+end
+
 endmodule

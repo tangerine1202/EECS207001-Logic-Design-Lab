@@ -161,23 +161,28 @@ initial begin
   $finish;
 end
 
+task PrintErr;
+begin
+   $display("[ERROR]");
+    $write("ren: %d\n", ren);
+    $write("wen: %d\n", wen);
+    $write("din: %d\n", din);
+    $write("addr: %d\n", addr);
+    $write("dout: %d\n", dout);
+    $write("out : %d\n", out);
+    $display;
+end
+endtask
 
 task Test;
   begin
     // FIXME: solve undesired delay
     // There will be a dout delay when read/write change, havn't find a good
     // solution yet. Use clock/4 delay to solve for now.
-    # (`CYC/4)
+    # (`CYC/4) 
     if (dout !== out) begin
-      $display("[ERROR]");
-      $write("ren: %d\n", ren);
-      $write("wen: %d\n", wen);
-      $write("din: %d\n", din);
-      $write("addr: %d\n", addr);
-      $write("dout: %h\n", dout);
-      $write("out : %h\n", out);
-      $display;
-    end
+      PrintErr;
+    end 
   end
 endtask
 
