@@ -8,7 +8,8 @@ module Parameterized_Ping_Pong_Counter (
     rst_n,                      // @sw0
     flip,                       // @sw1
     max, 
-    min
+    min,
+    debug_an
 );
 input clk, rst_n;
 input enable;
@@ -19,6 +20,11 @@ input [4-1:0] min;
 output [8-1:0] seg; // 0~6: ca~cg  7: dp
 output [4-1:0] an;
 
+wire [4-1:0] debug_an_n;
+output [4-1:0] debug_an;
+not debug_an_n0 [4-1:0] (debug_an_n, an);
+not debug_an0 [4-1:0] (debug_an, debug_an_n);
+
 wire flip_debounced;
 wire flip_one_pulse;
 wire rst_n_debounced;
@@ -26,6 +32,9 @@ wire rst_n_one_pulse;
 
 wire [4-1:0] out;
 wire direction;
+
+wire clk_out;
+wire clk_refresh;
 
 // Sequential: clock divider
 Clock_divider clock_divider(
@@ -96,7 +105,7 @@ output clk_out;
 output clk_refresh;
 
 parameter CLK_PER_OUT = 50_000_000 - 1;     // 1M clk / sec
-parameter CLK_PER_REFRESH = 500_000 - 1;  // 1M clk / sec
+parameter CLK_PER_REFRESH = 1000 - 1;  // 1M clk / sec
 
 reg [32-1:0] cnt_out;      // origin_clk => 1 clk_out
 reg [32-1:0] cnt_refresh;  // origin_clk => 1 clk_refresh 
@@ -158,11 +167,7 @@ assign an[0] = (an_idx == 2'b00) ? 1'b0 : 1'b1;  // direction
 
 // Combinational: display segments
 always @(*) begin
-    if (an_idx == 2'b00 || an_idx == 2'b01) begin
-        in_type = 1'b0;
-        in = {3'b0, direction};
-    end
-    else if (an_idx == 2'b10) begin
+    if (an_idx == 2'b10) begin
         in_type = 1'b1;
         in = (cnt >= 4'd10) ? (cnt - 4'd10) : cnt;
     end 
@@ -171,9 +176,9 @@ always @(*) begin
         in = (cnt >= 4'd10) ? 4'b0001 : 4'b0000;
     end
     else begin
-        in_type = 1'b1;
-        in = 4'ha;
-    end 
+        in_type = 1'b0;
+        in = {3'b0, direction};
+    end
 end
 
 Seven_Segment_Display seven_segment_display(
