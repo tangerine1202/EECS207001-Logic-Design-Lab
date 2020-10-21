@@ -4,21 +4,28 @@ module Parameterized_Ping_Pong_Counter (
     seg, 
     an, 
     clk, 
-    enable,                     // @sw15 
-    rst_n,                      // @sw0
-    flip,                       // @sw1
+    enable,         
+    rst,
+    flip,
     max, 
     min,
-    debug_an
+    debug_an,
+    debug_out,
+    clk_out,
+    clk_refresh
 );
-input clk, rst_n;
+input clk;
+input rst;
 input enable;
 input flip;
 input [4-1:0] max;
 input [4-1:0] min;
-
 output [8-1:0] seg; // 0~6: ca~cg  7: dp
 output [4-1:0] an;
+
+
+wire rst_n;
+assign rst_n = !rst;
 
 wire [4-1:0] debug_an_n;
 output [4-1:0] debug_an;
@@ -33,8 +40,11 @@ wire rst_n_one_pulse;
 wire [4-1:0] out;
 wire direction;
 
-wire clk_out;
-wire clk_refresh;
+// wire clk_out;
+// wire clk_refresh;
+output clk_out;
+output clk_refresh;
+
 
 // Sequential: clock divider
 Clock_divider clock_divider(
@@ -54,7 +64,6 @@ One_pulse one_pulse_flip (
    .pb_debounced(flip_debounced),
    .clk(clk_refresh)
 );
-
 // Sequential: rst_n debouncing, one pulse
 Debounce_n debounce_rst_n (
    .pb_debounced(rst_n_debounced),
@@ -68,6 +77,8 @@ One_pulse_n one_pulse_rst_n (
 );
 
 
+output [4-1:0] debug_out;
+assign debug_out = out;
 Ping_pong_counter pppc(
     .out(out), 
     .direction(direction), 
@@ -105,7 +116,7 @@ output clk_out;
 output clk_refresh;
 
 parameter CLK_PER_OUT = 50_000_000 - 1;     // 1M clk / sec
-parameter CLK_PER_REFRESH = 1000 - 1;  // 1M clk / sec
+parameter CLK_PER_REFRESH = 10_000 - 1;  // 1M clk / sec
 
 reg [32-1:0] cnt_out;      // origin_clk => 1 clk_out
 reg [32-1:0] cnt_refresh;  // origin_clk => 1 clk_refresh 
@@ -118,6 +129,9 @@ always @(posedge origin_clk) begin
     else begin
         cnt_out <= cnt_out + 32'b1;
     end
+end
+
+always @(posedge origin_clk) begin
     if (cnt_refresh == CLK_PER_REFRESH) begin
         cnt_refresh <= 32'b0;
     end
@@ -147,15 +161,19 @@ input direction;
 output [4-1:0] an;
 output [8-1:0] seg;
 
+// FIXME: 'an_idx' should be 2bit, but it doesn't work, idk why.
+//        and 3bits work, so don't touch it.
 reg [2-1:0] an_idx;  // index of current updating an
 reg [4-1:0] in;
 reg in_type;  // 0: direction  1: out 
+
 
 // Sequential: index of current updating an 
 always @(posedge clk) begin
     if (an_idx == 2'b11) begin
         an_idx <= 2'b00;
-    end begin
+    end
+    else begin
         an_idx <= an_idx + 2'b01;
     end
 end
@@ -324,7 +342,7 @@ always @(posedge clk or negedge rst_n or posedge flip) begin
     end
     else begin
         if (flip == 1'b1) begin
-            direction <= ~direction;
+            direction <= !direction;
         end    
         else begin
             direction <= next_direction;
@@ -362,12 +380,17 @@ end
 
 // Combinational: next_out
 always @(*) begin
-    if (enable && (max > min)) begin
-        if (next_direction == 1'b1 && (out < max)) begin
-            next_out = out + 4'b0001;
-        end
-        else if (next_direction == 1'b0 && (out > min)) begin
-            next_out = out - 4'b0001;
+    if (enable) begin
+        if (max > min) begin
+            if (next_direction == 1'b1 && (out < max)) begin
+                next_out = out + 4'b0001;
+            end
+            else if (next_direction == 1'b0 && (out > min)) begin
+                next_out = out - 4'b0001;
+            end
+            else begin
+                next_out = out;
+            end
         end
         else begin
             next_out = out;
