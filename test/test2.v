@@ -280,7 +280,7 @@ output reg pb_one_pulse;
 reg pb_debounced_delay;
 
 always @(posedge clk) begin
-    pb_one_pulse <= pb_debounced & (~pb_debounced_delay);
+    pb_one_pulse <= pb_debounced & (!pb_debounced_delay);
     pb_debounced_delay <= pb_debounced;
 end
 
@@ -296,7 +296,7 @@ output reg pb_one_pulse;
 reg pb_debounced_delay;
 
 always @(posedge clk) begin
-    pb_one_pulse <= pb_debounced | (~pb_debounced_delay);
+    pb_one_pulse <= pb_debounced | (!pb_debounced_delay);
     pb_debounced_delay <= pb_debounced;
 end
 
@@ -318,7 +318,7 @@ reg next_direction;
 reg [4-1:0] next_out;
 
 // Sequential: direction
-always @(posedge clk, negedge rst_n, posedge flip) begin
+always @(posedge clk or negedge rst_n or posedge flip) begin
     if (rst_n == 1'b0) begin
         direction <= 1'b1;
     end
@@ -333,7 +333,7 @@ always @(posedge clk, negedge rst_n, posedge flip) begin
 end
 
 // Sequential: out
-always @(posedge clk, negedge rst_n) begin
+always @(posedge clk or negedge rst_n) begin
     if (rst_n == 1'b0) begin
         out <= min;
     end
@@ -344,11 +344,16 @@ end
 
 // Combinational: next_direction
 always @(*) begin
-    if (out == min) begin
-        next_direction = 1'b1;
-    end
-    else if (out == max) begin
-        next_direction = 1'b0;
+    if (enable) begin 
+        if (out == min) begin
+            next_direction = 1'b1;
+        end
+        else if (out == max) begin
+            next_direction = 1'b0;
+        end
+        else begin
+            next_direction = direction;
+        end
     end
     else begin
         next_direction = direction;
