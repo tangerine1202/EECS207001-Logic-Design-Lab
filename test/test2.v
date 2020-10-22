@@ -10,9 +10,9 @@ module Parameterized_Ping_Pong_Counter (
     max, 
     min,
     debug_an,
-    debug_out,
-    clk_out,
-    clk_refresh
+    debug_out
+    // clk_out,
+    // clk_refresh
 );
 input clk;
 input rst;
@@ -40,10 +40,10 @@ wire rst_n_one_pulse;
 wire [4-1:0] out;
 wire direction;
 
-// wire clk_out;
-// wire clk_refresh;
-output clk_out;
-output clk_refresh;
+wire clk_out;
+wire clk_refresh;
+// output clk_out;
+// output clk_refresh;
 
 
 ClockDivider_out clock_divider_out(
@@ -118,15 +118,15 @@ module ClockDivider_out (clk_derived, clk_origin);
 input clk_origin;
 output clk_derived;
 
-reg [26-1:0] cnt;
-wire [26-1:0] next_cnt;
+reg [25-1:0] cnt;
+wire [25-1:0] next_cnt;
 
 always @(posedge clk_origin) begin
   cnt <= next_cnt;
 end
 
 assign next_cnt = cnt + 1; 
-assign clk_derived = cnt[26-1];
+assign clk_derived = cnt[25-1];
 
 endmodule
 
