@@ -163,7 +163,7 @@ end
 
 task PrintErr;
 begin
-   $display("[ERROR]");
+    $display("[ERROR]");
     $write("ren: %d\n", ren);
     $write("wen: %d\n", wen);
     $write("din: %d\n", din);
@@ -175,48 +175,49 @@ end
 endtask
 
 task Test;
-    begin
-        // FIXME: solve undesired delay
-        // There will be a dout delay when read/write change, havn't find a good
-        // solution yet. Use clock/4 delay to solve for now.
-        # (`CYC/4) 
-        if (dout !== out) begin
-          PrintErr;
-        end 
+  begin
+    // FIXME: solve undesired delay
+    // There will be a dout delay when read/write change, havn't find a good
+    // solution yet. Use clock/4 delay to solve for now.
+    # (`CYC/4)
+    if (dout !== out) begin
+      PrintErr;
     end
+  end
 endtask
 
 
 task GenerateTest;
-    input read;
-    input write;
-    input [7-1:0] addr_input;
-    input addr_source;
-    
-    begin
-        // generate
-        ren = read;
-        wen = write;
-        din = $urandom_range(0, 256-1);
-        if (addr_source == USE_RANDOM_ADDR) begin
-          addr = $urandom_range(0, 128-1);
-        end
-        else begin
-          addr = addr_input;
-        end
-    
-        // udpate answer
-        if (ren == 1'b1) begin
-          out = mem[addr];
-        end
-        else if (wen == 1'b1) begin
-          mem[addr] = din;
-          out = 8'b0;
-        end
-        else begin
-          out = 8'b0;
-        end
-    end    
+  input read;
+  input write;
+  input [7-1:0] addr_input;
+  input addr_source;
+
+  begin
+    // generate
+    ren = read;
+    wen = write;
+    din = $urandom_range(0, 256-1);
+    if (addr_source == USE_RANDOM_ADDR) begin
+      addr = $urandom_range(0, 128-1);
+    end
+    else begin
+      addr = addr_input;
+    end
+
+    // udpate answer
+    if (ren == 1'b1) begin
+      out = mem[addr];
+    end
+    else if (wen == 1'b1) begin
+      mem[addr] = din;
+      out = 8'b0;
+    end
+    else begin
+      out = 8'b0;
+    end
+  end
+
 endtask
 
 
