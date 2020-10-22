@@ -1,4 +1,4 @@
-`timescale 1ns/1ps 
+`timescale 1ns/1ps
 
 module Parameterized_Ping_Pong_Counter (
     seg, 
@@ -46,11 +46,14 @@ output clk_out;
 output clk_refresh;
 
 
-// Sequential: clock divider
-Clock_divider clock_divider(
-    .clk_out(clk_out),
-    .clk_refresh(clk_refresh),
-    .origin_clk(clk)
+ClockDivider_out clock_divider_out(
+    .clk_derived(clk_out),
+    .clk_origin(clk)
+);
+
+ClockDivider_refresh clock_divider_refresh(
+    .clk_derived(clk_refresh),
+    .clk_origin(clk)
 );
 
 // Sequential: flip debouncing, one pulse
@@ -109,39 +112,39 @@ endmodule
  *                   the display digit. So every 4 clk_refresh, the 7-segment display refresh.
  *                   1 clk / 1 ms
 */ 
-module Clock_divider (clk_out, clk_refresh, origin_clk);
+// TODO: parameterize ClokDivider clk
+module ClockDivider_out (clk_derived, clk_origin);
 
-input origin_clk;
-output clk_out;
-output clk_refresh;
+input clk_origin;
+output clk_derived;
 
-parameter CLK_PER_OUT = 50_000_000 - 1;     // 1M clk / sec
-parameter CLK_PER_REFRESH = 10_000 - 1;  // 1M clk / sec
+reg [26-1:0] cnt;
+wire [26-1:0] next_cnt;
 
-reg [32-1:0] cnt_out;      // origin_clk => 1 clk_out
-reg [32-1:0] cnt_refresh;  // origin_clk => 1 clk_refresh 
-
-// Sequential
-always @(posedge origin_clk) begin
-    if (cnt_out == CLK_PER_OUT) begin
-        cnt_out <= 32'b0;
-    end
-    else begin
-        cnt_out <= cnt_out + 32'b1;
-    end
+always @(posedge clk_origin) begin
+  cnt <= next_cnt;
 end
 
-always @(posedge origin_clk) begin
-    if (cnt_refresh == CLK_PER_REFRESH) begin
-        cnt_refresh <= 32'b0;
-    end
-    else begin
-        cnt_refresh <= cnt_refresh + 32'b1;
-    end
+assign next_cnt = cnt + 1; 
+assign clk_derived = cnt[26-1];
+
+endmodule
+
+
+module ClockDivider_refresh (clk_derived, clk_origin);
+
+input clk_origin;
+output clk_derived;
+
+reg [16-1:0] cnt;
+wire [16-1:0] next_cnt;
+
+always @(posedge clk_origin) begin
+  cnt <= next_cnt;
 end
 
-assign clk_out = (cnt_out == CLK_PER_OUT) ? 1'b1 : 1'b0;
-assign clk_refresh = (cnt_refresh == CLK_PER_REFRESH) ? 1'b1 : 1'b0;
+assign next_cnt = cnt + 1; 
+assign clk_derived = cnt[16-1];
 
 endmodule
 
