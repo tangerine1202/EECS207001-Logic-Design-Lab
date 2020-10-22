@@ -8,9 +8,7 @@ module Parameterized_Ping_Pong_Counter (
     rst,
     flip,
     max, 
-    min,
-    debug_an,
-    debug_out
+    min
 );
 input clk;
 input rst;
@@ -24,11 +22,6 @@ output [4-1:0] an;
 
 wire rst_n;
 assign rst_n = !rst;
-
-wire [4-1:0] debug_an_n;
-output [4-1:0] debug_an;
-not debug_an_n0 [4-1:0] (debug_an_n, an);
-not debug_an0 [4-1:0] (debug_an, debug_an_n);
 
 wire flip_debounced;
 wire flip_one_pulse;
@@ -76,8 +69,6 @@ One_pulse_n one_pulse_rst_n (
 );
 
 
-output [4-1:0] debug_out;
-assign debug_out = out;
 Ping_pong_counter pppc(
     .out(out), 
     .direction(direction), 
