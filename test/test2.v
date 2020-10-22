@@ -11,8 +11,6 @@ module Parameterized_Ping_Pong_Counter (
     min,
     debug_an,
     debug_out
-    // clk_out,
-    // clk_refresh
 );
 input clk;
 input rst;
@@ -42,8 +40,6 @@ wire direction;
 
 wire clk_out;
 wire clk_refresh;
-// output clk_out;
-// output clk_refresh;
 
 
 ClockDivider_out clock_divider_out(
@@ -147,8 +143,6 @@ assign next_cnt = cnt + 1;
 assign clk_derived = cnt[16-1];
 
 endmodule
-
-
 
 module Select_Display (
     seg, 
@@ -365,13 +359,18 @@ end
 
 // Combinational: next_direction
 always @(*) begin
-    if (enable) begin 
-        if (out == min) begin
-            next_direction = 1'b1;
-        end
-        else if (out == max) begin
-            next_direction = 1'b0;
-        end
+    if (enable) begin
+        if (max > min) begin
+            if (out == min) begin
+                next_direction = 1'b1;
+            end
+            else if (out == max) begin
+                next_direction = 1'b0;
+            end
+            else begin
+                next_direction = direction;
+            end
+        end 
         else begin
             next_direction = direction;
         end
