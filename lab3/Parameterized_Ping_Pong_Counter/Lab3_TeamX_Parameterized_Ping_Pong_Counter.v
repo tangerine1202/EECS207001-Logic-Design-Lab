@@ -39,7 +39,7 @@ always @(*) begin
             if (out >= min && out <= max) begin
                 if (flip == 1'b1) begin
                     next_direction = !direction;
-                end 
+                end
                 else begin
                     if (out == min) begin
                         next_direction = 1'b1;
@@ -51,11 +51,11 @@ always @(*) begin
                         next_direction = direction;
                     end
                 end
-            end 
+            end
             else begin
                 next_direction = direction;
             end
-        end 
+        end
         else begin
             next_direction = direction;
         end
@@ -87,7 +87,7 @@ always @(*) begin
         else begin
             next_out = out;
         end
-    end 
+    end
     else begin
         next_out = out;
     end

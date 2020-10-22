@@ -349,7 +349,7 @@ always @(*) begin
         if (max > min) begin
             if (out >= min && out <= max) begin
                 if (flip == 1'b1) begin
-                    next_direction <= !direction;
+                    next_direction = !direction;
                 end
                 else begin
                     if (out == min) begin
