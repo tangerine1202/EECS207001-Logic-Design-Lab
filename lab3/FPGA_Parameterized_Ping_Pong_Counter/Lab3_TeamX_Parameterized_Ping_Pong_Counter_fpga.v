@@ -1,13 +1,13 @@
 `timescale 1ns/1ps
 
 module Parameterized_Ping_Pong_Counter (
-    seg, 
-    an, 
-    clk, 
-    enable,         
+    seg,
+    an,
+    clk,
+    enable,
     rst,
     flip,
-    max, 
+    max,
     min
 );
 input clk;
@@ -70,13 +70,13 @@ One_pulse_n one_pulse_rst_n (
 
 
 Ping_pong_counter pppc(
-    .out(out), 
-    .direction(direction), 
-    .clk(clk_out), 
-    .rst_n(rst_n_one_pulse), 
-    .enable(enable), 
+    .out(out),
+    .direction(direction),
+    .clk(clk_out),
+    .rst_n(rst_n_one_pulse),
+    .enable(enable),
     .flip(flip_one_pulse),
-    .max(max), 
+    .max(max),
     .min(min)
 );
 
@@ -93,12 +93,12 @@ Select_Display select_display(
 endmodule
 
 
-/** 
+/**
  * @output clk_out: The clk for updating ping-pong counter. 1 clk / 0.5s
- * @output clk_refresh: The clk for updating 7-segment display. Once clk_refresh trigger, change 
+ * @output clk_refresh: The clk for updating 7-segment display. Once clk_refresh trigger, change
  *                   the display digit. So every 4 clk_refresh, the 7-segment display refresh.
  *                   1 clk / 1 ms
-*/ 
+*/
 // TODO: parameterize ClokDivider clk
 module ClockDivider_out (clk_derived, clk_origin);
 
@@ -112,7 +112,7 @@ always @(posedge clk_origin) begin
   cnt <= next_cnt;
 end
 
-assign next_cnt = cnt + 1; 
+assign next_cnt = cnt + 1;
 assign clk_derived = cnt[25-1];
 
 endmodule
@@ -130,16 +130,16 @@ always @(posedge clk_origin) begin
   cnt <= next_cnt;
 end
 
-assign next_cnt = cnt + 1; 
+assign next_cnt = cnt + 1;
 assign clk_derived = cnt[16-1];
 
 endmodule
 
 module Select_Display (
-    seg, 
-    an, 
-    cnt, 
-    direction, 
+    seg,
+    an,
+    cnt,
+    direction,
     clk
 );
 
@@ -153,10 +153,10 @@ output [8-1:0] seg;
 //        and 3bits work, so don't touch it.
 reg [2-1:0] an_idx;  // index of current updating an
 reg [4-1:0] in;
-reg in_type;  // 0: direction  1: out 
+reg in_type;  // 0: direction  1: out
 
 
-// Sequential: index of current updating an 
+// Sequential: index of current updating an
 always @(posedge clk) begin
     if (an_idx == 2'b11) begin
         an_idx <= 2'b00;
@@ -176,7 +176,7 @@ always @(*) begin
     if (an_idx == 2'b10) begin
         in_type = 1'b1;
         in = (cnt >= 4'd10) ? (cnt - 4'd10) : cnt;
-    end 
+    end
     else if (an_idx == 2'b11) begin
         in_type = 1'b1;
         in = (cnt >= 4'd10) ? 4'b0001 : 4'b0000;
@@ -195,24 +195,24 @@ Seven_Segment_Display seven_segment_display(
 
 endmodule
 
-module Seven_Segment_Display (seg, in, in_type); 
+module Seven_Segment_Display (seg, in, in_type);
 
 input [4-1:0] in;
-input in_type;  // 0: direction  1: out 
+input in_type;  // 0: direction  1: out
 output reg [8-1:0] seg; // 0~6: ca~cg  7: dp
 
 // Combinational: next seg
 always @(*) begin
     if (in_type == 1'b0) begin
         if (in == 4'b1) begin
-            seg = 8'b11011100;  // ca, cb, cf 
+            seg = 8'b11011100;  // ca, cb, cf
         end
         else begin
             seg = 8'b11100011;  // cc, cd, ce
         end
-    end 
+    end
     else begin
-        case(in) 
+        case(in)
             4'd0: begin seg = 8'b11000000; end
             4'd1: begin seg = 8'b11111001; end
             4'd2: begin seg = 8'b10100100; end
@@ -350,8 +350,8 @@ always @(*) begin
             if (out >= min && out <= max) begin
                 if (flip == 1'b1) begin
                     next_direction <= !direction;
-                end    
-                else begin 
+                end
+                else begin
                     if (out == min) begin
                         next_direction = 1'b1;
                     end
@@ -362,11 +362,11 @@ always @(*) begin
                         next_direction = direction;
                     end
                 end
-            end 
+            end
             else begin
                 next_direction = direction;
             end
-        end 
+        end
         else begin
             next_direction = direction;
         end
@@ -398,7 +398,7 @@ always @(*) begin
         else begin
             next_out = out;
         end
-    end 
+    end
     else begin
         next_out = out;
     end
