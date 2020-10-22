@@ -61,7 +61,7 @@ Debounce debounce_flip (
 One_pulse one_pulse_flip (
    .pb_one_pulse(flip_one_pulse),
    .pb_debounced(flip_debounced),
-   .clk(clk_refresh)
+   .clk(clk_out)
 );
 // Sequential: rst_n debouncing, one pulse
 Debounce_n debounce_rst_n (
@@ -72,7 +72,7 @@ Debounce_n debounce_rst_n (
 One_pulse_n one_pulse_rst_n (
    .pb_one_pulse(rst_n_one_pulse),
    .pb_debounced(rst_n_debounced),
-   .clk(clk_refresh)
+   .clk(clk_out)
 );
 
 
@@ -333,7 +333,8 @@ reg next_direction;
 reg [4-1:0] next_out;
 
 // Sequential: direction
-always @(posedge clk or negedge rst_n or posedge flip) begin
+// always @(posedge clk or negedge rst_n or posedge flip) begin
+always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         direction <= 1'b1;
     end
@@ -348,7 +349,8 @@ always @(posedge clk or negedge rst_n or posedge flip) begin
 end
 
 // Sequential: out
-always @(posedge clk or negedge rst_n) begin
+// always @(posedge clk or negedge rst_n) begin
+always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         out <= min;
     end
