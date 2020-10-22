@@ -179,21 +179,22 @@ task Test;
     // FIXME: solve undesired delay
     // There will be a dout delay when read/write change, havn't find a good
     // solution yet. Use clock/4 delay to solve for now.
-    # (`CYC/4) 
+    # (`CYC/4)
     if (dout !== out) begin
       PrintErr;
-    end 
+    end
   end
 endtask
 
 
 task GenerateTest;
-    input read;
-    input write;
-    input [7-1:0] addr_input;
-    input addr_source;
+  input read;
+  input write;
+  input [7-1:0] addr_input;
+  input addr_source;
+
+  begin
     // generate
-    begin
     ren = read;
     wen = write;
     din = $urandom_range(0, 256-1);
@@ -216,6 +217,7 @@ task GenerateTest;
       out = 8'b0;
     end
   end
+
 endtask
 
 
