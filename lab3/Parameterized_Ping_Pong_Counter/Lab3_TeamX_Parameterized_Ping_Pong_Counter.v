@@ -35,12 +35,12 @@ end
 // Combinational: next_direction
 always @(*) begin
     if (enable) begin
-        if (flip == 1'b1) begin
-            next_direction = !direction;
-        end 
-        else begin
-            if (max > min) begin
-                if (out >= min && out <= max) begin
+        if (max > min) begin
+            if (out >= min && out <= max) begin
+                if (flip == 1'b1) begin
+                    next_direction = !direction;
+                end 
+                else begin
                     if (out == min) begin
                         next_direction = 1'b1;
                     end
@@ -50,14 +50,14 @@ always @(*) begin
                     else begin
                         next_direction = direction;
                     end
-                end 
-                else begin
-                    next_direction = direction;
                 end
             end 
             else begin
                 next_direction = direction;
             end
+        end 
+        else begin
+            next_direction = direction;
         end
     end
     else begin
