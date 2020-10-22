@@ -324,7 +324,6 @@ reg next_direction;
 reg [4-1:0] next_out;
 
 // Sequential: direction
-// always @(posedge clk or negedge rst_n or posedge flip) begin
 always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         direction <= 1'b1;
@@ -340,7 +339,6 @@ always @(posedge clk) begin
 end
 
 // Sequential: out
-// always @(posedge clk or negedge rst_n) begin
 always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         out <= min;
@@ -354,12 +352,17 @@ end
 always @(*) begin
     if (enable) begin
         if (max > min) begin
-            if (out == min) begin
-                next_direction = 1'b1;
-            end
-            else if (out == max) begin
-                next_direction = 1'b0;
-            end
+            if (out >= min && out <= max) begin
+                if (out == min) begin
+                    next_direction = 1'b1;
+                end
+                else if (out == max) begin
+                    next_direction = 1'b0;
+                end
+                else begin
+                    next_direction = direction;
+                end
+            end 
             else begin
                 next_direction = direction;
             end
@@ -377,11 +380,16 @@ end
 always @(*) begin
     if (enable) begin
         if (max > min) begin
-            if (next_direction == 1'b1 && (out < max)) begin
-                next_out = out + 4'b0001;
-            end
-            else if (next_direction == 1'b0 && (out > min)) begin
-                next_out = out - 4'b0001;
+            if (out >= min && out <= max) begin
+                if (next_direction == 1'b1) begin
+                    next_out = out + 4'b0001;
+                end
+                else if (next_direction == 1'b0) begin
+                    next_out = out - 4'b0001;
+                end
+                else begin
+                    next_out = out;
+                end
             end
             else begin
                 next_out = out;

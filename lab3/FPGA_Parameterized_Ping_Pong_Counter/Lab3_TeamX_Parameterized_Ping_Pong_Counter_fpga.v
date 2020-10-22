@@ -1,23 +1,27 @@
-`timescale 1ns/1ps 
+`timescale 1ns/1ps
 
 module Parameterized_Ping_Pong_Counter (
     seg, 
     an, 
     clk, 
-    enable,                     // @sw15 
-    rst_n,                      // @sw0
-    flip,                       // @sw1
+    enable,         
+    rst,
+    flip,
     max, 
     min
 );
-input clk, rst_n;
+input clk;
+input rst;
 input enable;
 input flip;
 input [4-1:0] max;
 input [4-1:0] min;
-
 output [8-1:0] seg; // 0~6: ca~cg  7: dp
 output [4-1:0] an;
+
+
+wire rst_n;
+assign rst_n = !rst;
 
 wire flip_debounced;
 wire flip_one_pulse;
@@ -27,11 +31,18 @@ wire rst_n_one_pulse;
 wire [4-1:0] out;
 wire direction;
 
-// Sequential: clock divider
-Clock_divider clock_divider(
-    .clk_out(clk_out),
-    .clk_refresh(clk_refresh),
-    .origin_clk(clk)
+wire clk_out;
+wire clk_refresh;
+
+
+ClockDivider_out clock_divider_out(
+    .clk_derived(clk_out),
+    .clk_origin(clk)
+);
+
+ClockDivider_refresh clock_divider_refresh(
+    .clk_derived(clk_refresh),
+    .clk_origin(clk)
 );
 
 // Sequential: flip debouncing, one pulse
@@ -43,9 +54,8 @@ Debounce debounce_flip (
 One_pulse one_pulse_flip (
    .pb_one_pulse(flip_one_pulse),
    .pb_debounced(flip_debounced),
-   .clk(clk_refresh)
+   .clk(clk_out)
 );
-
 // Sequential: rst_n debouncing, one pulse
 Debounce_n debounce_rst_n (
    .pb_debounced(rst_n_debounced),
@@ -55,7 +65,7 @@ Debounce_n debounce_rst_n (
 One_pulse_n one_pulse_rst_n (
    .pb_one_pulse(rst_n_one_pulse),
    .pb_debounced(rst_n_debounced),
-   .clk(clk_refresh)
+   .clk(clk_out)
 );
 
 
@@ -89,40 +99,41 @@ endmodule
  *                   the display digit. So every 4 clk_refresh, the 7-segment display refresh.
  *                   1 clk / 1 ms
 */ 
-module Clock_divider (clk_out, clk_refresh, origin_clk);
+// TODO: parameterize ClokDivider clk
+module ClockDivider_out (clk_derived, clk_origin);
 
-input origin_clk;
-output clk_out;
-output clk_refresh;
+input clk_origin;
+output clk_derived;
 
-parameter CLK_PER_OUT = 50_000_000 - 1;     // 1M clk / sec
-parameter CLK_PER_REFRESH = 500_000 - 1;  // 1M clk / sec
+reg [25-1:0] cnt;
+wire [25-1:0] next_cnt;
 
-reg [32-1:0] cnt_out;      // origin_clk => 1 clk_out
-reg [32-1:0] cnt_refresh;  // origin_clk => 1 clk_refresh 
-
-// Sequential
-always @(posedge origin_clk) begin
-    if (cnt_out == CLK_PER_OUT) begin
-        cnt_out <= 32'b0;
-    end
-    else begin
-        cnt_out <= cnt_out + 32'b1;
-    end
-    if (cnt_refresh == CLK_PER_REFRESH) begin
-        cnt_refresh <= 32'b0;
-    end
-    else begin
-        cnt_refresh <= cnt_refresh + 32'b1;
-    end
+always @(posedge clk_origin) begin
+  cnt <= next_cnt;
 end
 
-assign clk_out = (cnt_out == CLK_PER_OUT) ? 1'b1 : 1'b0;
-assign clk_refresh = (cnt_refresh == CLK_PER_REFRESH) ? 1'b1 : 1'b0;
+assign next_cnt = cnt + 1; 
+assign clk_derived = cnt[25-1];
 
 endmodule
 
 
+module ClockDivider_refresh (clk_derived, clk_origin);
+
+input clk_origin;
+output clk_derived;
+
+reg [16-1:0] cnt;
+wire [16-1:0] next_cnt;
+
+always @(posedge clk_origin) begin
+  cnt <= next_cnt;
+end
+
+assign next_cnt = cnt + 1; 
+assign clk_derived = cnt[16-1];
+
+endmodule
 
 module Select_Display (
     seg, 
@@ -138,15 +149,19 @@ input direction;
 output [4-1:0] an;
 output [8-1:0] seg;
 
+// FIXME: 'an_idx' should be 2bit, but it doesn't work, idk why.
+//        and 3bits work, so don't touch it.
 reg [2-1:0] an_idx;  // index of current updating an
 reg [4-1:0] in;
 reg in_type;  // 0: direction  1: out 
+
 
 // Sequential: index of current updating an 
 always @(posedge clk) begin
     if (an_idx == 2'b11) begin
         an_idx <= 2'b00;
-    end begin
+    end
+    else begin
         an_idx <= an_idx + 2'b01;
     end
 end
@@ -158,11 +173,7 @@ assign an[0] = (an_idx == 2'b00) ? 1'b0 : 1'b1;  // direction
 
 // Combinational: display segments
 always @(*) begin
-    if (an_idx == 2'b00 || an_idx == 2'b01) begin
-        in_type = 1'b0;
-        in = {3'b0, direction};
-    end
-    else if (an_idx == 2'b10) begin
+    if (an_idx == 2'b10) begin
         in_type = 1'b1;
         in = (cnt >= 4'd10) ? (cnt - 4'd10) : cnt;
     end 
@@ -171,9 +182,9 @@ always @(*) begin
         in = (cnt >= 4'd10) ? 4'b0001 : 4'b0000;
     end
     else begin
-        in_type = 1'b1;
-        in = 4'ha;
-    end 
+        in_type = 1'b0;
+        in = {3'b0, direction};
+    end
 end
 
 Seven_Segment_Display seven_segment_display(
@@ -275,7 +286,7 @@ output reg pb_one_pulse;
 reg pb_debounced_delay;
 
 always @(posedge clk) begin
-    pb_one_pulse <= pb_debounced & (~pb_debounced_delay);
+    pb_one_pulse <= pb_debounced & (!pb_debounced_delay);
     pb_debounced_delay <= pb_debounced;
 end
 
@@ -291,7 +302,7 @@ output reg pb_one_pulse;
 reg pb_debounced_delay;
 
 always @(posedge clk) begin
-    pb_one_pulse <= pb_debounced | (~pb_debounced_delay);
+    pb_one_pulse <= pb_debounced | (!pb_debounced_delay);
     pb_debounced_delay <= pb_debounced;
 end
 
@@ -313,13 +324,13 @@ reg next_direction;
 reg [4-1:0] next_out;
 
 // Sequential: direction
-always @(posedge clk, negedge rst_n, posedge flip) begin
+always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         direction <= 1'b1;
     end
     else begin
         if (flip == 1'b1) begin
-            direction <= ~direction;
+            direction <= !direction;
         end    
         else begin
             direction <= next_direction;
@@ -328,7 +339,7 @@ always @(posedge clk, negedge rst_n, posedge flip) begin
 end
 
 // Sequential: out
-always @(posedge clk, negedge rst_n) begin
+always @(posedge clk) begin
     if (rst_n == 1'b0) begin
         out <= min;
     end
@@ -339,14 +350,26 @@ end
 
 // Combinational: next_direction
 always @(*) begin
-    // if (flip == 1'b1)
-    //     next_direction = direction;
-    // else
-    if (out == min) begin
-        next_direction = 1'b1;
-    end
-    else if (out == max) begin
-        next_direction = 1'b0;
+    if (enable) begin
+        if (max > min) begin
+            if (out >= min && out <= max) begin
+                if (out == min) begin
+                    next_direction = 1'b1;
+                end
+                else if (out == max) begin
+                    next_direction = 1'b0;
+                end
+                else begin
+                    next_direction = direction;
+                end
+            end 
+            else begin
+                next_direction = direction;
+            end
+        end 
+        else begin
+            next_direction = direction;
+        end
     end
     else begin
         next_direction = direction;
@@ -355,13 +378,26 @@ end
 
 // Combinational: next_out
 always @(*) begin
-    if (enable && (max > min)) begin
-        if (next_direction == 1'b1 && out < max) 
-            next_out = out + 4'b0001;
-        else if (next_direction == 1'b0 && out > min)
-            next_out = out - 4'b0001;
-        else 
+    if (enable) begin
+        if (max > min) begin
+            if (out >= min && out <= max) begin
+                if (next_direction == 1'b1) begin
+                    next_out = out + 4'b0001;
+                end
+                else if (next_direction == 1'b0) begin
+                    next_out = out - 4'b0001;
+                end
+                else begin
+                    next_out = out;
+                end
+            end
+            else begin
+                next_out = out;
+            end
+        end
+        else begin
             next_out = out;
+        end
     end 
     else begin
         next_out = out;
