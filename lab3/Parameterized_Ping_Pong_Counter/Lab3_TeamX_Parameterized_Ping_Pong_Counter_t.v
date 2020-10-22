@@ -59,27 +59,43 @@ endtask
 task max_min_out;
 begin
     reset();
-    #(`CYC * 2);
-    max = 10;
-    min = 2;
+    // max == min
     #(`CYC * 4);
-    @ (negedge clk) flip = !flip;
-    @ (negedge clk) flip = !flip;
+    max = 8;
+    min = 8;
     #(`CYC * 2);
-    min = 10;
-    #(`CYC * 5);
+    max = 15;
+    min = 0;
+
+    // max == min == out
+    #(`CYC * 4);
+    max = 8;
+    min = 8;
+    #(`CYC *2);
+
+    // reset max,min to 15,0
+    max = 15;
+    min = 0;
+    #(`CYC * 4);
 end
 endtask
 
 task out_boundary;
 begin
     reset();
+    // out of max boundary (max change)
     #(`CYC * 8) max = 5;
     #(`CYC * 2) max = 15;
-    @ (negedge clk) flip = !flip;
-    @ (negedge clk) flip = !flip;
-    #(`CYC * 2) min = 8;
     #(`CYC * 2);
+
+    @ (negedge clk) flip = !flip;
+    @ (negedge clk) flip = !flip;
+    
+    // out of min boundary (min change)
+    #(`CYC * 4) min = 12;
+    #(`CYC * 2);
+
+    // reset max,min to 15,0
     max = 15;
     min = 0;
     #(`CYC * 4);
@@ -89,7 +105,7 @@ endtask
 task bounce;
 begin
     reset();
-    #(`CYC * 40);
+    #(`CYC * 36);
 end
 endtask
 
