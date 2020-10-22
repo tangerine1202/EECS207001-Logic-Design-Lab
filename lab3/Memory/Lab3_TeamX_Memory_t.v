@@ -42,7 +42,7 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 0, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -51,7 +51,7 @@ initial begin
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 0, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -63,7 +63,7 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 1, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -72,7 +72,7 @@ initial begin
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 1, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -84,7 +84,7 @@ initial begin
   // write mem[0, 7]
   for (idx = 0; idx < 8; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(0, 1, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -93,7 +93,7 @@ initial begin
   // write mem[n-1-8, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-8; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(0, 1, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -102,7 +102,7 @@ initial begin
   // read mem[0, 7]
   for (idx = 0; idx < 8; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 0, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -112,7 +112,7 @@ initial begin
   // read mem[n-1-8, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-8; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 0, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       // Test(.read(1), .write(0), idx);
@@ -125,7 +125,7 @@ initial begin
   // test mem[0, 1]
   for (idx = 0; idx < 2; idx = idx+1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 1, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -134,7 +134,7 @@ initial begin
   // test mem[n-2, n-1]
   for (idx = DEPTH-1; idx > DEPTH-1-2; idx = idx-1) begin
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(1), .addr_input(idx), .addr_source(USE_INPUT_ADDR));
+      GenerateTest(1, 1, idx, USE_INPUT_ADDR);
     end
     @ (posedge clk) begin
       Test;
@@ -145,13 +145,13 @@ initial begin
   // Stochastic Test
   repeat (2 ** 6) begin
     @ (negedge clk) begin
-      GenerateTest(.read(0), .write(1), .addr_input(0), .addr_source(USE_RANDOM_ADDR));
+      GenerateTest(0, 1, 0, USE_RANDOM_ADDR);
     end
     @ (posedge clk) begin
       Test;
     end
     @ (negedge clk) begin
-      GenerateTest(.read(1), .write(0), .addr_input(0), .addr_source(USE_RANDOM_ADDR));
+      GenerateTest(1, 0, 0, USE_RANDOM_ADDR);
     end
     @ (posedge clk) begin
       Test;
