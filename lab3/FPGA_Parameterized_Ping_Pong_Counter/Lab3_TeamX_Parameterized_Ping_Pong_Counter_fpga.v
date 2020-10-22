@@ -35,12 +35,12 @@ wire clk_out;
 wire clk_refresh;
 
 
-ClockDivider_out clock_divider_out(
+ClockDivider #(.n(25)) clock_divider_out(
     .clk_derived(clk_out),
     .clk_origin(clk)
 );
 
-ClockDivider_refresh clock_divider_refresh(
+ClockDivider #(.n(16)) clock_divider_refresh(
     .clk_derived(clk_refresh),
     .clk_origin(clk)
 );
@@ -99,41 +99,23 @@ endmodule
  *                   the display digit. So every 4 clk_refresh, the 7-segment display refresh.
  *                   1 clk / 1 ms
 */ 
-// TODO: parameterize ClokDivider clk
-module ClockDivider_out (clk_derived, clk_origin);
+module ClockDivider (parameter n = 25) (clk_derived, clk_origin);
 
 input clk_origin;
 output clk_derived;
 
-reg [25-1:0] cnt;
-wire [25-1:0] next_cnt;
+reg [n-1:0] cnt;
+wire [n-1:0] next_cnt;
 
 always @(posedge clk_origin) begin
   cnt <= next_cnt;
 end
 
 assign next_cnt = cnt + 1; 
-assign clk_derived = cnt[25-1];
+assign clk_derived = cnt[n-1];
 
 endmodule
 
-
-module ClockDivider_refresh (clk_derived, clk_origin);
-
-input clk_origin;
-output clk_derived;
-
-reg [16-1:0] cnt;
-wire [16-1:0] next_cnt;
-
-always @(posedge clk_origin) begin
-  cnt <= next_cnt;
-end
-
-assign next_cnt = cnt + 1; 
-assign clk_derived = cnt[16-1];
-
-endmodule
 
 module Select_Display (
     seg, 
@@ -329,12 +311,7 @@ always @(posedge clk) begin
         direction <= 1'b1;
     end
     else begin
-        if (flip == 1'b1) begin
-            direction <= !direction;
-        end    
-        else begin
-            direction <= next_direction;
-        end
+        direction <= next_direction;
     end
 end
 
@@ -353,14 +330,19 @@ always @(*) begin
     if (enable) begin
         if (max > min) begin
             if (out >= min && out <= max) begin
-                if (out == min) begin
-                    next_direction = 1'b1;
-                end
-                else if (out == max) begin
-                    next_direction = 1'b0;
-                end
-                else begin
-                    next_direction = direction;
+                if (flip == 1'b1) begin
+                    next_direction <= !direction;
+                end    
+                else begin 
+                    if (out == min) begin
+                        next_direction = 1'b1;
+                    end
+                    else if (out == max) begin
+                        next_direction = 1'b0;
+                    end
+                    else begin
+                        next_direction = direction;
+                    end
                 end
             end 
             else begin

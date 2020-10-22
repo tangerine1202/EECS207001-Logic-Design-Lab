@@ -163,7 +163,7 @@ end
 
 task PrintErr;
 begin
-   $display("[ERROR]");
+    $display("[ERROR]");
     $write("ren: %d\n", ren);
     $write("wen: %d\n", wen);
     $write("din: %d\n", din);
