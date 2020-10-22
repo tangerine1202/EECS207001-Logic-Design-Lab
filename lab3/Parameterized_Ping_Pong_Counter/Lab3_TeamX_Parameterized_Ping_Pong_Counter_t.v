@@ -25,21 +25,21 @@ Parameterized_Ping_Pong_Counter pppc (
 );
 
 initial begin
-    ta1();
-    ta2();
-    ta3();
-    enable_chk();
-    bounce();
-    out_boundary();
-    max_min_out();
-    random_change();
+    ta1;
+    ta2;
+    ta3;
+    enable_chk;
+    bounce;
+    out_boundary;
+    max_min_out;
+    random_change;
 
     $finish;
 end
 
 task random_change;
 begin
-    reset();
+    reset;
     #(`CYC * 2);
     max = $urandom_range(15);
     min = $urandom_range(15);
@@ -58,7 +58,7 @@ endtask
 
 task max_min_out;
 begin
-    reset();
+    reset;
     // max == min
     #(`CYC * 4);
     max = 8;
@@ -82,7 +82,7 @@ endtask
 
 task out_boundary;
 begin
-    reset();
+    reset;
     // out of max boundary (max change)
     #(`CYC * 8) max = 5;
     #(`CYC * 2) max = 15;
@@ -104,14 +104,14 @@ endtask
 
 task bounce;
 begin
-    reset();
+    reset;
     #(`CYC * 36);
 end
 endtask
 
-task enable_chk();
+task enable_chk;
 begin
-    reset();
+    reset;
     #(`CYC * 4) enable = 1'b0;
     #(`CYC * 4) enable = 1'b1;
     #(`CYC * 4);
@@ -120,7 +120,7 @@ endtask
 
 task ta3;
 begin
-    reset();
+    reset;
     #(`CYC * 15);
     #(`CYC * 4);
 end
@@ -128,7 +128,7 @@ endtask
 
 task ta2;
 begin
-    reset();
+    reset;
     #(`CYC * 6);
     @ (negedge clk) flip = !flip;
     @ (negedge clk) flip = !flip;        
@@ -138,7 +138,7 @@ endtask
 
 task ta1;
 begin
-    reset();
+    reset;
     #(`CYC * 6);
     repeat (2*4) begin
         @ (negedge clk) flip = !flip;        
