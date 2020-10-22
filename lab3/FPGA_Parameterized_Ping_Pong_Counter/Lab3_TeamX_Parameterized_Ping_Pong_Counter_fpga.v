@@ -329,12 +329,7 @@ always @(posedge clk) begin
         direction <= 1'b1;
     end
     else begin
-        if (flip == 1'b1) begin
-            direction <= !direction;
-        end    
-        else begin
-            direction <= next_direction;
-        end
+        direction <= next_direction;
     end
 end
 
@@ -353,14 +348,19 @@ always @(*) begin
     if (enable) begin
         if (max > min) begin
             if (out >= min && out <= max) begin
-                if (out == min) begin
-                    next_direction = 1'b1;
-                end
-                else if (out == max) begin
-                    next_direction = 1'b0;
-                end
-                else begin
-                    next_direction = direction;
+                if (flip == 1'b1) begin
+                    next_direction <= !direction;
+                end    
+                else begin 
+                    if (out == min) begin
+                        next_direction = 1'b1;
+                    end
+                    else if (out == max) begin
+                        next_direction = 1'b0;
+                    end
+                    else begin
+                        next_direction = direction;
+                    end
                 end
             end 
             else begin
