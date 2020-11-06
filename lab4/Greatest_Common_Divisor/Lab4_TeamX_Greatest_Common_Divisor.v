@@ -3,8 +3,8 @@
 module Greatest_Common_Divisor (clk, rst_n, Begin, a, b, Complete, gcd);
 input clk, rst_n;
 input Begin;
-input reg [16-1:0] a;
-input reg [16-1:0] b;
+input 16-1:0] a;
+input [16-1:0] b;
 output reg Complete;
 output reg [16-1:0] gcd;
 
@@ -19,6 +19,8 @@ reg finish_done;
 reg out;
 reg next_a;
 reg next_b;
+reg cal_a;
+reg cal_b;
 reg [1:0] complete_cnt;
 reg next_gcd;
 reg next_complete;
@@ -50,30 +52,30 @@ end
 // [CAL] Sequentail: control calculate state
 always @(posedge clk) begin
     if (state == CAL) begin
-        a <= next_a;
-        b <= next_b;
+        cal_a <= next_a;
+        cal_b <= next_b;
     end
     else begin
-        a <= a;
-        b <= b;
+        cal_a <= a;
+        cal_b <= b;
     end
 end
 
 // [CAL] Combinational: calculate gcd
 always @(*) begin
     if (state == CAL) begin
-        if (a == 16'h0) begin
+        if (cal_a == 16'h0) begin
             out <= b;
             cal_done <= 1'b1;
         end
         else begin
-            if (b == 16'h0) begin
+            if (cal_b == 16'h0) begin
                 out <= a;
                 cal_done <= 1'b1;
             end
             else begin
-                if (a > b) next_a <= a - b;
-                else       next_b <= b - a;
+                if (a > b) next_a <= cal_a - cal_b;
+                else       next_b <= cal_b - cal_a;
             end
         end
     end
