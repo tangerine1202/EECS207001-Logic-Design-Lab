@@ -22,8 +22,6 @@ reg [16-1:0] next_b;
 reg [16-1:0] cal_a;
 reg [16-1:0] cal_b;
 reg [1:0] complete_cnt;
-reg [16-1:0] next_gcd;
-reg next_complete;
 
 // Sequential: change current state 
 always @(posedge clk) begin
@@ -44,7 +42,7 @@ always @(*) begin
         end
         FINISH: begin
             if (finish_done == 1'b1) next_state = WAIT;
-            else                      next_state = FINISH;
+            else                     next_state = FINISH;
         end
     endcase
 end
@@ -52,8 +50,8 @@ end
 // [CAL] Sequentail: control calculate state
 always @(posedge clk) begin
     if (state == CAL) begin
-        cal_a <= next_a;
-        cal_b <= next_b;
+        if (cal_a > cal_b) cal_a <= next_a;
+        else               cal_b <= next_b;
     end
     else begin
         cal_a <= a;
@@ -88,31 +86,36 @@ end
 // [FINISH] Sequential: control finish state
 always @(posedge clk) begin
     if (state == FINISH) begin
-        gcd <= next_gcd;
-        Complete <= next_complete;
+        if (complete_cnt == 2'b10) begin 
+            gcd <= 16'h0;
+            Complete <= 1'b0;
+            complete_cnt <= 2'b00;
+        end
+        else begin
+            gcd <= out;
+            Complete <= 1'b1;
+            complete_cnt <= complete_cnt + 2'b01;
+        end
     end
     else begin
-        gcd <= gcd;
-        Complete <= Complete;
+        gcd <= 16'h0;
+        Complete <= 1'b0;
+        complete_cnt <= 2'b00;
     end
 end
 
-// [FINISH] Combinational: count complete clock
+//// [FINISH] Combinational: count complete clock
 always @(*) begin
     if (state == FINISH) begin
         if (complete_cnt == 2'b10) begin
             finish_done = 1'b1;
         end
         else begin
-            next_gcd = out;
-            next_complete = 1'b1;
-            complete_cnt = complete_cnt + 2'b01;
+            finish_done = 1'b0;
         end 
     end
     else begin
-        next_gcd = 16'h0;
-        next_complete = 1'b0;
-        complete_cnt = 2'b00;
+        finish_done = 1'b0;
     end
 end
 

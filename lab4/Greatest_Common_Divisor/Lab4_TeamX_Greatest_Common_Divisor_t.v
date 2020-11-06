@@ -27,15 +27,17 @@ always #(`CYC/2) clk = ~clk;
 
 initial begin
     reset();
-    for(i = 0 ; i < 100 ; i=i+1) begin
-        #(`CYC) a = i;
-        for(j = 0 ; j < 100 ; j=j+1) begin
-            b = j;
-            @(negedge clk) Begin = 1'b1;
-            @(negedge clk) Begin = 1'b0;
+    for(i = 1 ; i <= 100 ; i=i+1) begin
+        @(negedge clk) a = i;
+        for(j = 1 ; j <= 100 ; j=j+1) begin
+            @(negedge clk) 
+                b = j;
+                Begin = 1'b1;
+            @(negedge clk) 
+                Begin = 1'b0;
             @(posedge Complete) begin
                 check_gcd();
-                // check_complete();
+                check_complete();
             end
         end
     end
@@ -74,13 +76,13 @@ endtask
 
 task check_complete;
 begin
-    @(posedge clk) if(Complete != 1'b1) begin
-        $display("[Error] Complete signal down too early (a=%d, b=%d)", a, b);
-    end
     @(negedge clk) if(Complete != 1'b1) begin
         $display("[Error] Complete signal down too early (a=%d, b=%d)", a, b);
     end
     @(posedge clk) if(Complete != 1'b1) begin
+        $display("[Error] Complete signal down too early (a=%d, b=%d)", a, b);
+    end
+    @(negedge clk) if(Complete != 1'b1) begin
         $display("[Error] Complete signal down too early (a=%d, b=%d)", a, b);
     end
 end
