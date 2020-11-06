@@ -9,8 +9,8 @@ reg rst_n = 1'b1;
 reg Begin = 1'b0;
 reg [16-1:0] a = 16'h0;
 reg [16-1:0] b = 16'h0;
-reg Complete;
-reg [16-1:0] gcd;
+wire Complete;
+wire [16-1:0] gcd;
 integer i, j;
 
 Greatest_Common_Divisor gcd0 (
@@ -28,12 +28,14 @@ always #(`CYC/2) clk = ~clk;
 initial begin
     reset();
     for(i = 0 ; i < 100 ; i=i+1) begin
-        a = i;
+        #(`CYC) a = i;
         for(j = 0 ; j < 100 ; j=j+1) begin
             b = j;
-            if(Complete) begin 
+            @(negedge clk) Begin = 1'b1;
+            @(negedge clk) Begin = 1'b0;
+            @(posedge Complete) begin
                 check_gcd();
-                check_complete();
+                // check_complete();
             end
         end
     end
@@ -58,8 +60,8 @@ begin
         end
     end
     while (bb != 0) begin
-        if (aa > bb) aa = aa - bb;
-        else         bb = bb - aa;
+        if (aa > bb) aa = aa % bb;
+        else         bb = bb % aa;
     end
     if (bb == 16'h0) begin
         if (aa != gcd) begin
@@ -82,4 +84,6 @@ begin
         $display("[Error] Complete signal down too early (a=%d, b=%d)", a, b);
     end
 end
+endtask
+
 endmodule
