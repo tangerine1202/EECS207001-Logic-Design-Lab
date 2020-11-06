@@ -59,21 +59,33 @@ always @(posedge clk) begin
     end
 end
 
+
 // [CAL] Combinational: calculate gcd
 always @(*) begin
     if (state == CAL) begin
-        if (cal_a == 16'h0) begin
-            out = b;
+        if (cal_a > cal_b) next_a = cal_a - cal_b;
+        else               next_b = cal_b - cal_a;
+    end
+    else begin
+        next_a = next_a;
+        next_b = next_b;
+    end
+end
+
+// [CAL] Combinational: raise cal_done flag
+always @(*) begin
+    if (state == CAL) begin
+        if (next_a == 16'h0) begin
+            out = cal_b;
             cal_done = 1'b1;
         end
         else begin
-            if (cal_b == 16'h0) begin
-                out = a;
+            if (next_b == 16'h0) begin
+                out = cal_a;
                 cal_done = 1'b1;
             end
             else begin
-                if (cal_a > cal_b) next_a = cal_a - cal_b;
-                else               next_b = cal_b - cal_a;
+                cal_done = cal_done;
             end
         end
     end
@@ -81,7 +93,7 @@ always @(*) begin
         out = 16'h0;
         cal_done = 1'b0;
     end
-end
+end 
 
 // [FINISH] Sequential: control finish state
 always @(posedge clk) begin
