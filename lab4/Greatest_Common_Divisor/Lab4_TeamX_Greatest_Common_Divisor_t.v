@@ -28,17 +28,8 @@ always #(`CYC/2) clk = ~clk;
 initial begin
     reset();
     for(i = 1 ; i <= 100 ; i=i+1) begin
-        @(negedge clk) a = i;
         for(j = 1 ; j <= 100 ; j=j+1) begin
-            @(negedge clk) 
-                b = j;
-                Begin = 1'b1;
-            @(negedge clk) 
-                Begin = 1'b0;
-            @(posedge Complete) begin
-                check_gcd();
-                check_complete();
-            end
+            test(i, j);
         end
     end
 end
@@ -47,6 +38,21 @@ task reset;
 begin
     @(negedge clk) rst_n = 1'b0;
     @(negedge clk) rst_n = 1'b1;
+end
+endtask
+
+task test(input integer x, input integer y);
+begin
+    @(negedge clk)
+        a = x;
+        b = y;
+        Begin = 1'b1;
+    @(negedge clk)
+        Begin = 1'b0;
+    @(posedge Complete) begin
+        check_gcd();
+        check_complete();
+    end
 end
 endtask
 
