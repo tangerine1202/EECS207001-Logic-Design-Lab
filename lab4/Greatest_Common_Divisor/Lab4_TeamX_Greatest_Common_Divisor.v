@@ -68,8 +68,8 @@
             else               next_b = cal_b - cal_a;
         end
         else begin
-            next_a = next_a;
-            next_b = next_b;
+            next_a = a;
+            next_b = b;
         end
     end
 
