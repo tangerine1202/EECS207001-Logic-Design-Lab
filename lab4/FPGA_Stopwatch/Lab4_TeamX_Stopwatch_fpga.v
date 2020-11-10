@@ -5,7 +5,7 @@ module Stopwatch_fpga (seg, an, start, clk, rst);
 input clk;
 input rst;
 input start;
-output [8-1:0] seg; // [7]:dp, [6:0]cg~ca 
+output [8-1:0] seg; // [7]:dp, [6:0]cg~ca
 output [4-1:0] an;
 
 wire decisecond_div_sig;  // 1/10 sec clk (based on original clk is 100M hz)
@@ -104,7 +104,7 @@ assign have_seconds_carry = (have_deciseconds_carry && (seconds == 4'd9));
 assign have_dekaseconds_carry = (have_deciseconds_carry && have_seconds_carry && (dekaseconds == 4'd5));
 assign have_minutes_carry = (have_deciseconds_carry && have_seconds_carry && have_dekaseconds_carry && (minutes == 4'd9));
 
-// SC: state transition & update timer 
+// SC: state transition & update timer
 always @(posedge clk) begin
   if (div_sig == 1'b1) begin
     if (rst == 1'b1) begin
@@ -248,9 +248,9 @@ reg [2-1:0] an_idx;
 reg [4-1:0] seg_in;
 
 always @(posedge clk) begin
-  if (div_sig == 1'b1) 
+  if (div_sig == 1'b1)
     an_idx <= an_idx + 2'b1;
-  else 
+  else
     an_idx <= an_idx;
 end
 
@@ -310,10 +310,10 @@ end
 endmodule
 
 /*
-only use "posedge orig_clk", don't use 'derived_clk'
+only use "posedge orig_clk", don't use 'posedge derived_clk'
 
 ex.
-  derived_clk waveform:
+  div_sig waveform:
   _|-|_________|-|_________|-|_________|-|____
 
   always @(posedge clk) begin
