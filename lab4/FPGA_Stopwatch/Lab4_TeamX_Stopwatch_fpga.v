@@ -89,7 +89,7 @@ output reg [4-1:0] deciseconds;
 reg [2-1:0] state;
 reg [2-1:0] next_state;
 
-reg [4-1:0] next_minuts;
+reg [4-1:0] next_minutes;
 reg [4-1:0] next_dekaseconds;
 reg [4-1:0] next_seconds;
 reg [4-1:0] next_deciseconds;
@@ -116,7 +116,7 @@ always @(posedge clk) begin
     end
     else begin
       state <= next_state;
-      minutes <= next_minuts;
+      minutes <= next_minutes;
       dekaseconds <= next_dekaseconds;
       seconds <= next_seconds;
       deciseconds <= next_deciseconds;
@@ -165,20 +165,20 @@ end
 always @(*) begin
   case (next_state)
     RESET: begin
-      next_minuts = 4'b0;
+      next_minutes = 4'b0;
       next_dekaseconds = 4'b0;
       next_seconds = 4'b0;
       next_deciseconds = 4'b0;
     end
     WAIT: begin
       if (have_minutes_carry == 1'b1) begin
-        next_minuts = 4'b0;
+        next_minutes = 4'b0;
         next_dekaseconds = 4'b0;
         next_seconds = 4'b0;
         next_deciseconds = 4'b0;
       end
       else begin
-        next_minuts = minutes;
+        next_minutes = minutes;
         next_dekaseconds = dekaseconds;
         next_seconds = seconds;
         next_deciseconds = deciseconds;
@@ -214,15 +214,15 @@ always @(*) begin
       // next minutes
       if (have_dekaseconds_carry == 1'b1) begin
         if (have_minutes_carry == 1'b1)
-          next_minuts = 4'b0;
+          next_minutes = 4'b0;
         else
-          next_minuts = minutes + 4'b1;
+          next_minutes = minutes + 4'b1;
       end
       else
-        next_minuts = minutes;
+        next_minutes = minutes;
     end
     default: begin
-      next_minuts = 4'b0;
+      next_minutes = 4'b0;
       next_dekaseconds = 4'b0;
       next_seconds = 4'b0;
       next_deciseconds = 4'b0;
