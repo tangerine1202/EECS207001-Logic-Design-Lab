@@ -12,7 +12,6 @@ wire decisecond_div_sig;  // 1/10 sec clk (based on original clk is 100M hz)
 wire display_div_sig;  // 1/10 sec clk (based on original clk is 100M hz)
 wire onepulse_rst;
 wire onepulse_start;
-// wire [4-1:0] times [4-1:0]; // minutes, 10-seconds, seconds, deciseconds
 wire [4-1:0] minutes;
 wire [4-1:0] dekaseconds;
 wire [4-1:0] seconds;
@@ -85,15 +84,9 @@ output reg [4-1:0] minutes;
 output reg [4-1:0] dekaseconds;
 output reg [4-1:0] seconds;
 output reg [4-1:0] deciseconds;
-// output reg [4-1:0] minutes; // 0~9
-// output reg [6-1:0] seconds; // 0~59
-// output reg [4-1:0] deciseconds;  // 0~9
 
 reg [2-1:0] state;
 reg [2-1:0] next_state;
-// reg [4-1:0] times [4-1:0]; // minutes, 10-seconds, seconds, deciseconds
-// reg [4-1:0] next_times [4-1:0];
-// wire carrys [4-1:0];
 
 reg [4-1:0] next_minuts;
 reg [4-1:0] next_dekaseconds;
@@ -105,16 +98,6 @@ wire have_dekaseconds_carry;
 wire have_seconds_carry;
 wire have_deciseconds_carry;
 
-// assign minutes = times[3];
-// assign dekaseconds = times[2];
-// assign seconds = times[1];
-// assign deciseconds = times[0];
-
-// assign is_time_limit = ((times[3] == 4'd9) && (times[2] == 4'd5) && (times[1] == 4'd9) && (times[0] == 4'd9));
-// assign carrys[3] = (carrys[3] == 4'd9);
-// assign carrys[2] = (carrys[2] == 4'd5);
-// assign carrys[1] = (carrys[1] == 4'd9);
-// assign carrys[0] = (carrys[0] == 4'd9);
 
 assign is_time_limit = ((minutes == 4'd9) && (dekaseconds == 4'd5) && (seconds == 4'd9) && (deciseconds == 4'd9));
 assign have_minutes_carry = (minutes == 4'd9);
@@ -130,10 +113,6 @@ always @(posedge clk) begin
       dekaseconds <= 4'b0;
       seconds <= 4'b0;
       deciseconds <= 4'b0;
-      // times[3] <= 4'b0;
-      // times[2] <= 4'b0;
-      // times[1] <= 4'b0;
-      // times[0] <= 4'b0;
     end
     else begin
       state <= next_state;
@@ -141,10 +120,6 @@ always @(posedge clk) begin
       dekaseconds <= next_dekaseconds;
       seconds <= next_seconds;
       deciseconds <= next_deciseconds;
-      // times[3] <= next_times[3];
-      // times[2] <= next_times[2];
-      // times[1] <= next_times[1];
-      // times[0] <= next_times[0];
     end
   end
   else begin
@@ -190,10 +165,6 @@ end
 always @(*) begin
   case (next_state)
     RESET: begin
-      // next_times[3] = 4'b0;
-      // next_times[2] = 4'b0;
-      // next_times[1] = 4'b0;
-      // next_times[0] = 4'b0;
       next_minuts = 4'b0;
       next_dekaseconds = 4'b0;
       next_seconds = 4'b0;
@@ -201,20 +172,12 @@ always @(*) begin
     end
     WAIT: begin
       if (is_time_limit == 1'b1) begin
-        // next_times[3] = 4'b0;
-        // next_times[2] = 4'b0;
-        // next_times[1] = 4'b0;
-        // next_times[0] = 4'b0;
         next_minuts = 4'b0;
         next_dekaseconds = 4'b0;
         next_seconds = 4'b0;
         next_deciseconds = 4'b0;
       end
       else begin
-        // next_times[3] = times[3];
-        // next_times[2] = times[1];
-        // next_times[1] = times[2];
-        // next_times[0] = times[0];
         next_minuts = minutes;
         next_dekaseconds = dekaseconds;
         next_seconds = seconds;
@@ -226,58 +189,43 @@ always @(*) begin
       if (have_dekaseconds_carry == 1'b1) begin
         if (have_minutes_carry == 1'b1)
           next_minuts = 4'b0;
-          // next_times[3] = 4'b0;
         else
           next_minuts = minutes + 4'b1;
-          // next_times[3] =  times[3] + 4'b1;
       end
       else
         next_minuts = minutes;
-        // next_times[3] = times[3];
 
       // next dekaseconds
       if (have_seconds_carry == 1'b1) begin
         if (have_dekaseconds_carry == 1'b1)
           next_dekaseconds =  4'b0;
-          // next_times[1] = 4'b0;
         else
           next_dekaseconds =  dekaseconds + 4'b1;
-          // next_times[1] = times[1] + 4'b1;
       end
       else
           next_dekaseconds =  dekaseconds;
-        // next_times[1] =  times[1];
 
       // next seconds
       if (have_deciseconds_carry == 1'b1) begin
         if (have_seconds_carry == 1'b1)
           next_seconds =  4'b0;
-          // next_times[1] = 4'b0;
         else
           next_seconds =  seconds + 4'b1;
-          // next_times[1] = times[1] + 4'b1;
       end
       else
           next_seconds =  seconds;
-        // next_times[1] =  times[1];
 
       // next deciseconds
       if (have_deciseconds_carry == 1'b1)
         next_deciseconds =  4'b0;
-        // next_times[0] = 4'b0;
       else
         next_deciseconds = deciseconds + 4'b1;
-        // next_times[0] = times[0] + 4'b1;
     end
     default: begin
       next_minuts = 4'b0;
       next_dekaseconds = 4'b0;
       next_seconds = 4'b0;
       next_deciseconds = 4'b0;
-      // next_times[3] = 4'b0;
-      // next_times[2] = 4'b0;
-      // next_times[1] = 4'b0;
-      // next_times[0] = 4'b0;
     end
   endcase
 end
