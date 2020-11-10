@@ -24,7 +24,7 @@
     reg [1:0] finish_cnt;
     reg [1:0] next_finish_cnt;
 
-    // Sequential: change current state 
+    // Sequential: control current state 
     always @(posedge clk) begin
         if (rst_n == 1'b0) state <= WAIT;
         else               state <= next_state;
@@ -45,14 +45,21 @@
                 if (finish_done == 1'b1) next_state = WAIT;
                 else                     next_state = FINISH;
             end
+            default: begin
+                next_state = next_state;
+            end
         endcase
     end
 
-    // [CAL] Sequentail: control calculate state
+    // [CAL] Sequentail: control CAL internal state
     always @(posedge clk) begin
         if (state == CAL) begin
-            if (cal_a > cal_b) cal_a <= next_a;
-            else               cal_b <= next_b;
+            // if (cal_a > cal_b) cal_a <= next_a;
+            // else               cal_b <= next_b;
+
+            // TODO: valid if this change work ?
+            cal_a <= next_a;
+            cal_b <= next_b;
         end
         else begin
             cal_a <= a;
@@ -73,7 +80,7 @@
         end
     end
 
-    // [CAL] Combinational: raise cal_done flag
+    // [CAL] Combinational: rise cal_done flag
     always @(*) begin
         if (state == CAL) begin
             if (next_a == 16'h0) begin
@@ -112,7 +119,7 @@
         else                 next_finish_cnt = 2'b00;
     end
 
-    // [FINISH] Combinational: raise finish_done flag
+    // [FINISH] Combinational: rise finish_done flag
     always @(*) begin
         if (state == FINISH) begin
             if (next_finish_cnt == 2'b10) begin
