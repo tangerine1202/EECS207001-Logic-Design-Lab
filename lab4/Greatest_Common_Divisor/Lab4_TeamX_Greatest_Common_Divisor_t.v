@@ -26,7 +26,7 @@ Greatest_Common_Divisor gcd0 (
 always #(`CYC/2) clk = ~clk;
 
 initial begin
-    reset();
+    reset;
     for(i = 1 ; i <= 100 ; i=i+1) begin
         for(j = 1 ; j <= 100 ; j=j+1) begin
             test(i, j);
@@ -50,8 +50,8 @@ begin
     @(negedge clk)
         Begin = 1'b0;
     @(posedge Complete) begin
-        check_gcd();
-        check_complete();
+        check_gcd;
+        check_complete;
     end
 end
 endtask
