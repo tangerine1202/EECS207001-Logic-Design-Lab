@@ -1,8 +1,8 @@
-`timescale 1ns/1ps
+`timescale 100ps/1ps
 
 `define CYC 4
 
-module Greatest_Common_Divisor_t();
+module Greatest_Common_Divisor_t ();
 
 reg clk = 1'b1;
 reg rst_n = 1'b1;
@@ -11,7 +11,7 @@ reg [16-1:0] a = 16'h0;
 reg [16-1:0] b = 16'h0;
 wire Complete;
 wire [16-1:0] gcd;
-integer i, j;
+integer i, j, k;
 
 Greatest_Common_Divisor gcd0 (
     .clk(clk),
@@ -26,12 +26,24 @@ Greatest_Common_Divisor gcd0 (
 always #(`CYC/2) clk = ~clk;
 
 initial begin
-    reset();
+    reset;
     for(i = 1 ; i <= 100 ; i=i+1) begin
         for(j = 1 ; j <= 100 ; j=j+1) begin
             test(i, j);
         end
     end
+    for(i = 'hffff ; i >= 'hffff-10 ; i=i-1) begin
+        for(j = 'hffff ; j >= 'hffff-10 ; j=j-1) begin
+            test(i, j);
+        end
+    end
+    for(k = 0 ; k < 10000 ; k=k+1) begin
+        i = $urandom_range(1, 'hffff);
+        j = $urandom_range(1, 'hffff);
+        test(i, j);
+        test(j, i);
+    end
+    $finish;
 end
 
 task reset;
@@ -50,8 +62,8 @@ begin
     @(negedge clk)
         Begin = 1'b0;
     @(posedge Complete) begin
-        check_gcd();
-        check_complete();
+        check_gcd;
+        check_complete;
     end
 end
 endtask
