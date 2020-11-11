@@ -3,12 +3,16 @@
 
 module Mealy_Sequence_Detector_t ();
 
-
 // IO port
 reg clk = 1'b0;
-reg rst_n;
+reg rst_n = 1'b1;
 reg in;
+reg [4-1:0] seq = 4'b0000;
+reg [2-1:0] i;
 wire dec;
+
+
+always #(`CYC/2) clk = ~clk;
 
 Mealy_Sequence_Detector q1(
   .clk(clk),
@@ -17,28 +21,19 @@ Mealy_Sequence_Detector q1(
   .dec(dec)
 );
 
-always #(`CYC/2) clk = ~clk;
-
-reg [4-1:0] seq;
-reg [2-1:0] i;
-
 initial begin
-  seq = 4'b0000;
-  rst_n = 1'b1;
   #`CYC  rst_n = 1'b0;
   #`CYC  rst_n = 1'b1;
 
   repeat (2 ** 4) begin
     i = 2'b11;
     in = seq[i];
-    // $display("seq: %b", seq);
     repeat (4) begin
       @ (posedge clk) begin
-        if (i == 2'b0) Test;
+        if (i == 2'b0)
+          Test;
       end
       @ (negedge clk) begin
-        // $display("in[%d]: %b", i, in);
-        // $display("dec: %b", dec);
         i = i - 2'b1;
         in = seq[i];
       end
@@ -47,7 +42,6 @@ initial begin
   end
 
   $finish;
-
 end
 
 task Test;

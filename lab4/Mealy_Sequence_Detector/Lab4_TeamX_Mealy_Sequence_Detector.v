@@ -2,12 +2,12 @@
 
 module Mealy_Sequence_Detector (clk, rst_n, in, dec);
 
-parameter S0 = 4'h0;  // Intial state
-parameter S1 = 4'h1;  
-parameter S2 = 4'h2;  
-parameter S3 = 4'h3;  
-parameter S5 = 4'h5;  
-parameter S6 = 4'h6; 
+parameter S0 = 4'h0;  // Initial state
+parameter S1 = 4'h1;
+parameter S2 = 4'h2;
+parameter S3 = 4'h3;
+parameter S5 = 4'h5;
+parameter S6 = 4'h6;
 parameter S7 = 4'h7;
 parameter F0 = 4'ha;
 parameter F1 = 4'hb;
