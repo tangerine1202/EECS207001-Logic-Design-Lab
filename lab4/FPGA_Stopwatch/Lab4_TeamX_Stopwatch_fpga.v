@@ -5,17 +5,17 @@ module Stopwatch_fpga (seg, an, start, clk, rst);
 input clk;
 input rst;
 input start;
-output [8-1:0] seg; // [7]:dp, [6:0]cg~ca
+output [8-1:0] seg; // [7]: dp, [6:0]: cg~ca
 output [4-1:0] an;
 
-wire decisecond_div_sig;  // 1/10 sec clk (based on original clk is 100M hz)
-wire display_div_sig;  // 1/10 sec clk (based on original clk is 100M hz)
+wire decisecond_div_sig;  // 0.1 sec clk (based on original clk is 100M hz)
+wire display_div_sig;
 wire onepulse_rst;
 wire onepulse_start;
 wire [4-1:0] minutes;
-wire [4-1:0] dekaseconds;
+wire [4-1:0] dekaseconds; // 10 sec
 wire [4-1:0] seconds;
-wire [4-1:0] deciseconds;
+wire [4-1:0] deciseconds; // 0.1 sec
 
 
 ClockDivider #(.DIV(32'd10_000_000)) decisecond_clk_divider (
@@ -31,7 +31,7 @@ ClockDivider #(.DIV(32'd100_000)) display_clk_divider (
 OnePulse rst_onepulse (
   .out(onepulse_rst),
   .in(rst),
-  .one_pulse_div_sig(decisecond_div_sig),
+  .onepulse_div_sig(decisecond_div_sig),
   .debounce_div_sig(display_div_sig),
   .clk(clk)
 );
@@ -39,7 +39,7 @@ OnePulse rst_onepulse (
 OnePulse start_onepulse (
   .out(onepulse_start),
   .in(start),
-  .one_pulse_div_sig(decisecond_div_sig),
+  .onepulse_div_sig(decisecond_div_sig),
   .debounce_div_sig(display_div_sig),
   .clk(clk)
 );
@@ -66,16 +66,14 @@ SegDisplay seg_display (
   .clk(clk)
 );
 
-
 endmodule
 
 
-// module Stopwatch (minutes, seconds, deciseconds, start, rst, clk);
 module Stopwatch (minutes, dekaseconds, seconds, deciseconds, start, rst, div_sig, clk);
 
-parameter WAIT = 2'b00;
-parameter COUNT = 2'b01;
-parameter RESET = 2'b10;
+parameter RESET = 2'b00;
+parameter WAIT = 2'b01;
+parameter COUNT = 2'b10;
 
 input clk;
 input div_sig;
@@ -93,16 +91,17 @@ reg [4-1:0] next_minutes;
 reg [4-1:0] next_dekaseconds;
 reg [4-1:0] next_seconds;
 reg [4-1:0] next_deciseconds;
-wire have_deciseconds_carry;
-wire have_seconds_carry;
-wire have_dekaseconds_carry;
-wire have_minutes_carry;
+
+wire is_minutes_carry;
+wire is_dekaseconds_carry;
+wire is_seconds_carry;
+wire is_deciseconds_carry;
 
 
-assign have_deciseconds_carry = (deciseconds == 4'd9);
-assign have_seconds_carry = (have_deciseconds_carry && (seconds == 4'd9));
-assign have_dekaseconds_carry = (have_deciseconds_carry && have_seconds_carry && (dekaseconds == 4'd5));
-assign have_minutes_carry = (have_deciseconds_carry && have_seconds_carry && have_dekaseconds_carry && (minutes == 4'd9));
+assign is_deciseconds_carry = (deciseconds == 4'd9);
+assign is_seconds_carry = ((seconds == 4'd9) && is_deciseconds_carry);
+assign is_dekaseconds_carry = ((dekaseconds == 4'd5) && is_seconds_carry  && is_deciseconds_carry);
+assign is_minutes_carry = ((minutes == 4'd9) && is_dekaseconds_carry && is_seconds_carry && is_deciseconds_carry);
 
 // SC: state transition & update timer
 always @(posedge clk) begin
@@ -150,7 +149,7 @@ always @(*) begin
       if (start == 1'b1)
         next_state = WAIT;
       else begin
-        if (have_minutes_carry == 1'b1)
+        if (is_minutes_carry == 1'b1)
           next_state = WAIT;
         else
           next_state = COUNT;
@@ -171,7 +170,7 @@ always @(*) begin
       next_deciseconds = 4'b0;
     end
     WAIT: begin
-      if (have_minutes_carry == 1'b1) begin
+      if (is_minutes_carry == 1'b1) begin
         next_minutes = 4'b0;
         next_dekaseconds = 4'b0;
         next_seconds = 4'b0;
@@ -186,14 +185,14 @@ always @(*) begin
     end
     COUNT: begin
       // next deciseconds
-      if (have_deciseconds_carry == 1'b1)
+      if (is_deciseconds_carry == 1'b1)
         next_deciseconds =  4'b0;
       else
         next_deciseconds = deciseconds + 4'b1;
 
       // next seconds
-      if (have_deciseconds_carry == 1'b1) begin
-        if (have_seconds_carry == 1'b1)
+      if (is_deciseconds_carry == 1'b1) begin
+        if (is_seconds_carry == 1'b1)
           next_seconds =  4'b0;
         else
           next_seconds =  seconds + 4'b1;
@@ -202,8 +201,8 @@ always @(*) begin
           next_seconds =  seconds;
 
       // next dekaseconds
-      if (have_seconds_carry == 1'b1) begin
-        if (have_dekaseconds_carry == 1'b1)
+      if (is_seconds_carry == 1'b1) begin
+        if (is_dekaseconds_carry == 1'b1)
           next_dekaseconds =  4'b0;
         else
           next_dekaseconds =  dekaseconds + 4'b1;
@@ -212,8 +211,8 @@ always @(*) begin
           next_dekaseconds =  dekaseconds;
 
       // next minutes
-      if (have_dekaseconds_carry == 1'b1) begin
-        if (have_minutes_carry == 1'b1)
+      if (is_dekaseconds_carry == 1'b1) begin
+        if (is_minutes_carry == 1'b1)
           next_minutes = 4'b0;
         else
           next_minutes = minutes + 4'b1;
@@ -241,11 +240,11 @@ input [4-1:0] minutes;
 input [4-1:0] dekaseconds;
 input [4-1:0] seconds;
 input [4-1:0] deciseconds;
-output [8-1:0] seg;
+output [8-1:0] seg;   // [7]: dp, [6:0]: cg~ca
 output [4-1:0] an;
 
 reg [2-1:0] an_idx;
-reg [4-1:0] seg_in;
+reg [4-1:0] num;
 
 always @(posedge clk) begin
   if (div_sig == 1'b1)
@@ -254,26 +253,26 @@ always @(posedge clk) begin
     an_idx <= an_idx;
 end
 
-always @(*) begin
-  case (an_idx)
-    2'd3: seg_in = minutes;
-    2'd2: seg_in = dekaseconds;
-    2'd1: seg_in = seconds;
-    2'd0: seg_in = deciseconds;
-    default: seg_in = 4'b0;
-  endcase
-end
-
 assign an[3] = (an_idx == 2'd3) ? 1'b0 : 1'b1;
 assign an[2] = (an_idx == 2'd2) ? 1'b0 : 1'b1;
 assign an[1] = (an_idx == 2'd1) ? 1'b0 : 1'b1;
 assign an[0] = (an_idx == 2'd0) ? 1'b0 : 1'b1;
 
+always @(*) begin
+  case (an_idx)
+    2'd3: num = minutes;
+    2'd2: num = dekaseconds;
+    2'd1: num = seconds;
+    2'd0: num = deciseconds;
+    default: num = 4'he;
+  endcase
+end
+
 // dp
 assign seg[7] = (an_idx == 2'd1) ? 1'b0 : 1'b1;
 
 NumToSeg num_to_seg (
-  .num(seg_in),
+  .num(num),
   .seg(seg[6:0])
 );
 
@@ -343,10 +342,11 @@ assign div_sig = (cnt == DIV - 32'b1) ? 1'b1: 1'b0;
 
 endmodule
 
-module OnePulse (out, in, one_pulse_div_sig, debounce_div_sig, clk);
+
+module OnePulse (out, in, onepulse_div_sig, debounce_div_sig, clk);
 
 input clk;
-input one_pulse_div_sig;
+input onepulse_div_sig;
 input debounce_div_sig;
 input in;
 output reg out;
@@ -362,7 +362,7 @@ Debounce #(.SIZE(4)) debounce (
 );
 
 always @(posedge clk) begin
-  if (one_pulse_div_sig == 1'b1) begin
+  if (onepulse_div_sig == 1'b1) begin
     out <= (debounced_in & (!prev_in));
     prev_in <= in;
   end
@@ -388,11 +388,11 @@ reg [SIZE-1:0] dff;
 
 always @(posedge clk) begin
   if (div_sig == 1'b1) begin
-    dff[3:1] <= dff[2:0];
+    dff[SIZE-1:1] <= dff[SIZE-2:0];
     dff[0] <= in;
   end
   else begin
-    dff[3:0] <= dff[3:0];
+    dff[SIZE-1:0] <= dff[SIZE-1:0];
   end
 end
 
