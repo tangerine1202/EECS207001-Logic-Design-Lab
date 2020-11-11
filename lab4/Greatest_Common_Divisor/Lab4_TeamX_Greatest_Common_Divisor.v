@@ -54,10 +54,6 @@
     // [CAL] Sequentail: control CAL internal state
     always @(posedge clk) begin
         if (state == CAL) begin
-            // if (cal_a > cal_b) cal_a <= next_a;
-            // else               cal_b <= next_b;
-
-            // TODO: valid if this change work ?
             cal_a <= next_a;
             cal_b <= next_b;
         end
