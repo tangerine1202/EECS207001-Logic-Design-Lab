@@ -9,7 +9,7 @@ parameter S3 = 4'h3;
 parameter S5 = 4'h5;
 parameter S6 = 4'h6;
 parameter S7 = 4'h7;
-parameter F0 = 4'ha;
+parameter F0 = 4'ha;  // Failed state
 parameter F1 = 4'hb;
 
 input clk, rst_n;
