@@ -8,7 +8,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports {an[3]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {an[2]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {an[1]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {an[0]}]
-#  [7]: dp, [6:0]: cg~ca 
+#  [7]: dp, [6:0]: cg~ca
 set_property PACKAGE_PIN V7 [get_ports {seg[7]}]
 set_property PACKAGE_PIN U7 [get_ports {seg[6]}]
 set_property PACKAGE_PIN V5 [get_ports {seg[5]}]
