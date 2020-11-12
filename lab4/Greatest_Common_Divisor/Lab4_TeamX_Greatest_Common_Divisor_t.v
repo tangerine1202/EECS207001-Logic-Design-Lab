@@ -27,6 +27,21 @@ always #(`CYC/2) clk = ~clk;
 
 initial begin
     reset;
+
+    // a = 0
+    test(0, 12);
+    test(0, 3);
+    test(0, 100);
+
+    // b = 0
+    test(34, 0);
+    test(67, 0);
+    test(281, 0);
+
+    // prime
+    test(1000000009, 1000000021);
+
+    //
     for(i = 1 ; i <= 100 ; i=i+1) begin
         for(j = 1 ; j <= 100 ; j=j+1) begin
             test(i, j);
