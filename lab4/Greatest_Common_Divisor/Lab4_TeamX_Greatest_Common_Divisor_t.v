@@ -27,7 +27,7 @@ always #(`CYC/2) clk = ~clk;
 
 initial begin
   reset;
-
+  
   // a = 0
   test(0, 12);
   test(0, 3);
@@ -37,11 +37,11 @@ initial begin
   test(34, 0);
   test(67, 0);
   test(281, 0);
-
+  
   // prime
-  test(1000000009, 1000000021);
-  test(1000000103, 1000000093);
-  test(1000000181, 1000000033);
+  test(60013, 60101);
+  test(60091, 60077);
+  test(60041, 60083);
 
   // small number
   for(i = 1 ; i <= 100 ; i=i+1) begin
@@ -63,6 +63,7 @@ initial begin
     test(i, j);
     test(j, i);
   end
+  
   $finish;
 end
 
