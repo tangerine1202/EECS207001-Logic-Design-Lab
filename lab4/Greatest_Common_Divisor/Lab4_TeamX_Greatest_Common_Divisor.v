@@ -95,6 +95,7 @@ always @(*) begin
     end
   end
   else begin
+    out = out;
     cal_done = 1'b0;
   end
 end
