@@ -15,19 +15,23 @@ tb = ''  # Testbench file
 
 # Input
 while user == '':
-    user = input('user: ')
+	user = input('user: ')
+	user.strip()
 while lab == '':
-    lab = input('lab name: ')
+	lab = input('lab name: ')
+	lab.strip()
 while ds == '':
-    ds = input('design: ')
-    if not ds.endswith('.v'):
-        ds += '.v'
+	ds = input('design: ')
+	ds.strip()
+	if not ds.endswith('.v'):
+		ds += '.v'
 while tb == '' or tb == 'n' or tb == 'no':
-    tb = input('testbench [{}](yes/<path>): '.format(ds[:-2]+'_t.v'))
-    if tb == 'y' or tb == 'yes':
-        tb = ds[:-2] + '_t.v'
-    elif (tb != '') and (not tb.endswith('.v')):
-        tb += '.v'
+	tb = input('testbench [{}](yes/<path>): '.format(ds[:-2]+'_t.v'))
+	tb.strip()
+	if tb == 'y' or tb == 'yes':
+		tb = ds[:-2] + '_t.v'
+	elif (tb != '') and (not tb.endswith('.v')):
+		tb += '.v'
 
 print("""
 [*] Design:    {}
@@ -55,3 +59,4 @@ print('[+] Seletct remote host & Run ncverilog...')
 os.system('ssh -tt {} "{}"'.format(user_at_host, remote_cmd))
 
 print('[+] Test done.')
+
