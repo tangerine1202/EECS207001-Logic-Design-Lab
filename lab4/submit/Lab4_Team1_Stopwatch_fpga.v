@@ -246,6 +246,7 @@ output [4-1:0] an;
 reg [2-1:0] an_idx;
 reg [4-1:0] num;
 
+// SC: an counter
 always @(posedge clk) begin
   if (div_sig == 1'b1)
     an_idx <= an_idx + 2'b1;
@@ -253,11 +254,13 @@ always @(posedge clk) begin
     an_idx <= an_idx;
 end
 
+// CC: an display
 assign an[3] = (an_idx == 2'd3) ? 1'b0 : 1'b1;
 assign an[2] = (an_idx == 2'd2) ? 1'b0 : 1'b1;
 assign an[1] = (an_idx == 2'd1) ? 1'b0 : 1'b1;
 assign an[0] = (an_idx == 2'd0) ? 1'b0 : 1'b1;
 
+// CC: num selector
 always @(*) begin
   case (an_idx)
     2'd3: num = minutes;
