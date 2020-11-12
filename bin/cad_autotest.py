@@ -8,30 +8,30 @@ CAD_IC = 'ic23'
 TIME_SEQ = dt.now().strftime('%m%d%H%M%S')
 
 # User
-user = 'u108062308'  # Your username here, ex: u108062000
-lab = 'lab4'  # The prefix of the directory created on CAD, recommend using lab#
-ds = '../lab4/Mealy_Sequence_Detector/Lab4_TeamX_Mealy_Sequence_Detector.v'  # Design file
-tb = '../lab4/Mealy_Sequence_Detector/Lab4_TeamX_Mealy_Sequence_Detector_t.v'  # Testbench file
+user = ''  # Your username here, ex: u108062000
+lab = ''  # The prefix of the directory created on CAD, recommend using lab#
+ds = ''  # Design file
+tb = ''  # Testbench file
 
 # Input
 while user == '':
-	user = input('user: ')
-	user.strip()
+    user = input('user: ')
+    user.strip()
 while lab == '':
-	lab = input('lab name: ')
-	lab.strip()
+    lab = input('lab name: ')
+    lab.strip()
 while ds == '':
-	ds = input('design: ')
-	ds.strip()
-	if not ds.endswith('.v'):
-		ds += '.v'
+    ds = input('design: ')
+    ds.strip()
+    if not ds.endswith('.v'):
+        ds += '.v'
 while tb == '' or tb == 'n' or tb == 'no':
-	tb = input(f"testbench [{ds[:-2]+'_t.v'}](yes/<path>):")
-	tb.strip()
-	if tb == 'y' or tb == 'yes':
-		tb = ds[:-2] + '_t.v'
-	elif (tb != '') and (not tb.endswith('.v')):
-		tb += '.v'
+    tb = input(f"testbench [{ds[:-2]+'_t.v'}](yes/<path>):")
+    tb.strip()
+    if tb == 'y' or tb == 'yes':
+        tb = ds[:-2] + '_t.v'
+    elif (tb != '') and (not tb.endswith('.v')):
+        tb += '.v'
 
 print(f"""
 [*] Design:    {ds}
@@ -59,4 +59,3 @@ print('[+] Seletct remote host & Run ncverilog...')
 os.system(f'ssh -tt {user_at_host} "{remote_cmd}"')
 
 print('[+] Test done.')
-
