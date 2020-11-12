@@ -50,16 +50,16 @@ initial begin
     end
   end
   // large number
-  for(i = 'hffff ; i >= 'hffff-10 ; i=i-1) begin
-    for(j = 'hffff ; j >= 'hffff-10 ; j=j-1) begin
+  for(i = 32'hffff ; i >= 32'hffff-10 ; i=i-1) begin
+    for(j = 32'hffff ; j >= 32'hffff-10 ; j=j-1) begin
       test(i, j);
     end
   end
 
   // random test
   for(k = 0 ; k < 10000 ; k=k+1) begin
-    i = $urandom_range(1, 'hffff);
-    j = $urandom_range(1, 'hffff);
+    i = $urandom_range(1, 32'hffff);
+    j = $urandom_range(1, 32'hffff);
     test(i, j);
     test(j, i);
   end
