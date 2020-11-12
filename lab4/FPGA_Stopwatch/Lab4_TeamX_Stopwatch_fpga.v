@@ -396,7 +396,7 @@ always @(posedge clk) begin
   end
 end
 
-// &: reduction AND
+// reduction AND
 assign out = &dff;
 
 endmodule
