@@ -10,7 +10,7 @@ Just keep pressing ENTER until back to command line.
 ssh 108######@140.114.75.200 "mkdir -p ./ssh/authorized_keys"
 
 4.
-cat ~/.ssh/id_rsa.pub | ssh 108######@140.114.75.200 "cat > ~/.ssh/authorized_keys"
+cat ~/.ssh/id_rsa.pub | ssh u108######@140.114.75.200 "cat >> ~/.ssh/authorized_keys"
 
 5.
 ssh 108######@140.114.75.200
@@ -33,7 +33,7 @@ Keep pressing ENTER until back to command line in CAD
 ssh ic23 "mkdir -p ./ssh/authorized_keys"
 
 5.
-cat ~/.ssh/id_rsa.pub | ssh ic23 "cat > ~/.ssh/authorized_keys"
+cat ~/.ssh/id_rsa.pub | ssh ic23 "cat >> ~/.ssh/authorized_keys"
 
 6.
 ssh ic23
