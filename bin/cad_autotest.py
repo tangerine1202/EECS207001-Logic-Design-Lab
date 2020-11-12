@@ -38,6 +38,9 @@ print(f"""
 [*] Testbench: {tb}
 """)
 
+remote_ds = ds.split('/')[-1]
+remote_tb = tb.split('/')[-1]
+
 # Remote Command
 user_at_host = f'{user}@{CAD_IP}'
 dir_name = f'./autotest/{lab}/{ds[:-2]}{TIME_SEQ}/'
@@ -45,9 +48,9 @@ remote_cmd = ''
 # Setting Cadence License(in order to use ncverilog)
 remote_cmd += 'source /usr/cad/cadence/setup.csh;'
 remote_cmd += f'mkdir -p {dir_name};'
-remote_cmd += f'mv {ds} {tb} {dir_name};'
+remote_cmd += f'mv {remote_ds} {remote_tb} {dir_name};'
 remote_cmd += f'cd {dir_name};'
-remote_cmd += f'ncverilog {ds} {tb};'
+remote_cmd += f'ncverilog {remote_ds} {remote_tb};'
 
 remote_cmd = f'ssh -tt {CAD_IC} \\"{remote_cmd}\\"'
 
