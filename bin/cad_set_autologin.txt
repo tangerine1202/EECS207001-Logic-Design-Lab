@@ -1,19 +1,21 @@
+This method only tests on macOS, maybe also works on Linux and WSL/2. 
+
 ## AutoLogin to CAD
 
 1.
 ssh-keygen -t rsa -b 4096
 
 2.
-Just keep pressing ENTER until back to command line.
+Just keep pressing ENTER until back to the command line.
 
 3.
-ssh 108######@140.114.75.200 "mkdir -p ./ssh/authorized_keys"
+ssh u108######@140.114.75.200 "mkdir -p ~/.ssh/;"
 
 4.
-cat ~/.ssh/id_rsa.pub | ssh 108######@140.114.75.200 "cat > ~/.ssh/authorized_keys"
+cat ~/.ssh/id_rsa.pub | ssh u108######@140.114.75.200 "cat >> ~/.ssh/authorized_keys"
 
 5.
-ssh 108######@140.114.75.200
+ssh u108######@140.114.75.200
 
 Now you should be able to login to CAD without typing password.
 
@@ -21,22 +23,19 @@ Now you should be able to login to CAD without typing password.
 ## AutoLogin to ic23
 
 1.
-ssh 108######@140.114.75.200
+ssh u108######@140.114.75.200
 
 2.
 ssh-keygen -t rsa -b 4096
 
 3.
-Keep pressing ENTER until back to command line in CAD
+Keep pressing ENTER until back to the command line in CAD
 
 4.
-ssh ic23 "mkdir -p ./ssh/authorized_keys"
+cat ~/.ssh/id_rsa.pub | ssh ic23 "cat >> ~/.ssh/authorized_keys"
 
 5.
-cat ~/.ssh/id_rsa.pub | ssh ic23 "cat > ~/.ssh/authorized_keys"
-
-6.
 ssh ic23
 
-Now you should be able to login to ic23 without typing password.
+Now you should be able to login to ic23 and any other ic## without typing password.
 

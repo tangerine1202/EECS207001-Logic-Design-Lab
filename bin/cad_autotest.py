@@ -8,8 +8,8 @@ CAD_IC = 'ic23'
 TIME_SEQ = dt.now().strftime('%m%d%H%M%S')
 
 # User
-user = ''  # Your username here, ex: u108062000
-lab = ''  # The prefix of the directory created on CAD, recommend using lab#
+user = 'u108062225'  # Your username here, ex: u108062000
+lab = 'test'  # The prefix of the directory created on CAD, recommend using lab#
 ds = ''  # Design file
 tb = ''  # Testbench file
 
@@ -62,3 +62,4 @@ print('[+] Seletct remote host & Run ncverilog...')
 os.system(f'ssh -tt {user_at_host} "{remote_cmd}"')
 
 print('[+] Test done.')
+
