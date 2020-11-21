@@ -36,18 +36,38 @@ Traffic_Light_Controller Q2 (
 );
 
 initial begin
-  #(`CYC/2) rst_n = 1'b0;
+  #(`CYC/2) 
+
+  // test: normal condition
+  #`CYC rst_n = 1'b0;
   #`CYC rst_n = 1'b1;
 
-  #(`CYC * (3-1)) lr_has_car = 1'b1;
-  #(`CYC * 13)
+  #(`CYC * (35 - 1)) lr_has_car = 1'b1;
+  #(`CYC * 70)
 
-
-  #(`CYC/2) rst_n = 1'b0;
+  // test: delay of 'lr_has_car' is longer than internal timer
+  #(`CYC) lr_has_car = 1'b0;
+  #(`CYC) rst_n = 1'b0;
   #`CYC rst_n = 1'b1;
 
-  #(`CYC * 5) lr_has_car = 1'b1;
-  #(`CYC * 13)
+  #(`CYC * (70 - 1)) lr_has_car = 1'b1;
+  #(`CYC * 70)
+  
+  // FIXME: test only
+  // #(`CYC/2) rst_n = 1'b0;
+  // #(`CYC) lr_has_car = 1'b1;
+  // #`CYC rst_n = 1'b1;
+
+  // // #(`CYC * (3-1)) lr_has_car = 1'b1;
+  // #(`CYC * 13)
+
+
+  // #(`CYC) lr_has_car = 1'b0;
+  // #(`CYC) rst_n = 1'b0;
+  // #`CYC rst_n = 1'b1;
+
+  // #(`CYC * (70-1)) lr_has_car = 1'b1;
+  // #(`CYC * 13)
 
   $finish;
 end

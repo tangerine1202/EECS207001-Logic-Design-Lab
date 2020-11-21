@@ -6,6 +6,7 @@ module Traffic_Light_Controller (clk, rst_n, lr_has_car, hw_light, lr_light);
 parameter GREEN  = 3'b100;
 parameter YELLOW = 3'b010;
 parameter RED    = 3'b001;
+parameter ERR_LIGHT = 3'b111;
 
 // States
 parameter HW_G = 3'd0;
@@ -20,8 +21,8 @@ parameter ERR_STATE = 3'd7;
 // IO ports
 input clk, rst_n;
 input lr_has_car;
-output [3-1:0] hw_light;
-output [3-1:0] lr_light;
+output reg [3-1:0] hw_light;
+output reg [3-1:0] lr_light;
 
 // wire & reg
 reg [3-1:0] state;
@@ -46,7 +47,9 @@ end
 always @(*) begin
   case (state)
     HW_G: begin
-      if (timer == 6'd3)
+      if (timer == 6'd35 - 6'd1 - 6'd1)
+      // if (timer == 6'd3 - 6'd1 - 6'd1)  // FIXME: test only
+        // leave 1 cyc to 'HW_G2Y' state
         next_state = HW_G2Y;
       else
         next_state = HW_G;
@@ -58,25 +61,28 @@ always @(*) begin
         next_state = HW_G2Y;
     end
     HW_Y: begin
-      if (timer == 6'd2 - 6'd1)
+      if (timer == 6'd15 - 6'd1)
+      // if (timer == 6'd2 - 6'd1)  // FIXME: test only
         next_state = HW_R;
       else
         next_state = HW_Y;
     end
     HW_R: begin
       if (timer == 6'd1 - 6'd1)
-        next_state = LR_R;
+        next_state = LR_G;
       else
         next_state = HW_R;
     end
     LR_G: begin
-      if (timer == 6'd3 - 6'd1)
+      if (timer == 6'd35 - 6'd1)
+      // if (timer == 6'd3 - 6'd1)  // FIXME: test only
         next_state = LR_Y;
       else
         next_state = LR_G;
     end
     LR_Y: begin
-      if (timer == 6'd2 - 6'd1)
+      if (timer == 6'd15 - 6'd1)
+      // if (timer == 6'd2 - 6'd1)  // FIXME: test only
         next_state = LR_R;
       else
         next_state = LR_Y;
@@ -99,6 +105,42 @@ always @(*) begin
     next_timer = 6'b0;
   else
     next_timer = timer + 6'b1;
+end
+
+// Assign 'hw_light'
+always @(*) begin
+  case (state)
+    HW_G,
+    HW_G2Y:
+      hw_light = GREEN;
+    HW_Y:
+      hw_light = YELLOW;
+    HW_R,
+    LR_G,
+    LR_Y,
+    LR_R:
+      hw_light = RED;
+    default
+      hw_light = ERR_LIGHT;
+  endcase
+end
+
+// Assign 'lr_light'
+always @(*) begin
+  case (state)
+    LR_G:
+      lr_light = GREEN;
+    LR_Y:
+      lr_light = YELLOW;
+    LR_R,
+    HW_G,
+    HW_G2Y,
+    HW_Y,
+    HW_R:
+      lr_light = RED;
+    default
+      lr_light = ERR_LIGHT;
+  endcase
 end
 
 endmodule
