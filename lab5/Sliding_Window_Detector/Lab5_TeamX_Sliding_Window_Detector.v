@@ -17,8 +17,8 @@ Detect2 Dec2 (
     .dec2(dec2),
     .in(in),
     .clk(clk),
-    .rst_n(rsn_n)
-;)
+    .rst_n(rst_n)
+);
 
 endmodule
 
@@ -36,8 +36,8 @@ input clk;
 input rst_n;
 output reg dec1;
 
-reg state;
-reg next_state;
+reg [3-1:0] state;
+reg [3-1:0] next_state;
 
 always @(posedge clk) begin
     if (rst_n == 1'b0) begin
@@ -91,7 +91,7 @@ always @(*) begin
             end 
         end
         THIRD_ONE: begin
-            if (in == 1'b0) begin
+            if (in == 1'b1) begin
                 next_state = STOP;
                 dec1 = 1'b0;
             end
@@ -125,11 +125,11 @@ input clk;
 input rst_n;
 output reg dec2;
 
-reg state;
-reg next_state;
+reg [2-1:0] state;
+reg [2-1:0] next_state;
 
 always @(posedge clk) begin
-    if (rst_n == 1'b1) begin
+    if (rst_n == 1'b0) begin
         state <= WAIT;
     end
     else begin
@@ -142,7 +142,7 @@ always @(*) begin
         WAIT: begin
             if (in == 1'b1) begin
                 next_state = FIRST_ONE;
-                dec2 = 1'b0
+                dec2 = 1'b0;
             end
             else begin
                 next_state = WAIT;

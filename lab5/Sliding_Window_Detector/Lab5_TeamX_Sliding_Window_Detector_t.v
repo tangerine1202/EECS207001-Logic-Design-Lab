@@ -22,8 +22,12 @@ always #(`CYC/2) clk = ~clk;
 
 initial begin
     reset;
+    
+    dec1_pdf;
+    #(`CYC*2);
+    dec2_pdf;
 
-
+    $finish;
 end
 
 // testcase on lab5 pdf
