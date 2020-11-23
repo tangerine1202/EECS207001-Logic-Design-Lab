@@ -95,7 +95,7 @@ begin
                 Zero;
             else
                 One;
-            #(`CYC*2) reset;  // delay 2 clk to avoid concat situation and reset chk1_stop
+            #(`CYC*2) reset;  // delay 2 clk to avoid concatenate situation and reset chk1_stop
         end
     end
     iter = 8'b0000_0000;
@@ -113,7 +113,7 @@ begin
                 Zero;
             else
                 One;
-            #(`CYC*2) reset;  // delay 2 clk and reset to avoid concat situation and chk1 error
+            #(`CYC*2) reset;  // delay 2 clk and reset to avoid concatenate situation and chk1 error
         end
     end
     iter = 8'b0000_0000;
