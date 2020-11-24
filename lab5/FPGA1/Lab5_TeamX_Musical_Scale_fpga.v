@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module FPGA_1 (
+module Musical_Scale_fpga (
     input clk,
     inout PS2_DATA,
     inout PS2_CLK,
