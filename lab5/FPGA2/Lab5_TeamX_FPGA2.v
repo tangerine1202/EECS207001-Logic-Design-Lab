@@ -2,7 +2,7 @@
 
 module FPGA_2 (
     output reg gen_div_sig,
-    output inst50_cond,
+    output reg inst50_cond,
     output [8-1:0] seg,
     output [4-1:0]  an,
     output [4-1:0]  LED_drinks_affordable,
@@ -40,25 +40,32 @@ wire general_div_sig;
 
 // State Control
 parameter INSERT_COIN = 2'b00;
-parameter BUT_DRINK = 2'b01;
+parameter BUY_DRINK = 2'b01;
 parameter RETURN_MONEY = 2'b10;
 reg [1:0] state;
 reg [1:0] next_state;
+reg goto_buy;
+reg goto_return;
 
 // Money Control
 parameter MONEY_BIT = 8;
 reg [MONEY_BIT-1:0] current_money;
 reg [MONEY_BIT-1:0] next_money;
+reg [MONEY_BIT-1:0] next_money_cost;
+reg [MONEY_BIT-1:0] next_money_return;
 reg [MONEY_BIT-1:0] collect_coin;
 reg [MONEY_BIT-1:0] buy_cost;
 
 /* ---- debug ---- */
-assign inst50_cond = inst_50_op;
 always @(posedge clk) begin
-    if (second_div_sig == 1'b1 || gen_div_sig == 1'b1)
-        gen_div_sig <= 1'b1;
-    else
-        gen_div_sig <= 1'b0;
+    // if (current_money == 8'd0 || gen_div_sig == 1'b1)
+    //     gen_div_sig <= 1'b1;
+    // else
+    //     gen_div_sig <= 1'b0;
+    gen_div_sig = goto_return;
+end
+always @(*) begin
+    inst50_cond = state;
 end
 
 // Divide Clock
@@ -72,7 +79,6 @@ Clock_Divider #(.DIV_TIME(32'd100_000)) clk_div_general  (
    .rst(rst_op),
    .clk(clk)
 );
-
 
 // Debounce and Onepulse signals
 DeBounce_OnePulse #(.SIZE(4)) dbop_rst  (
@@ -111,7 +117,7 @@ Display_Money display_money (
     .seg(seg),
     .money(current_money),
     .clk(clk),
-    .div_sig(second_div_sig)
+    .div_sig(general_div_sig)
 );
 
 Display_Affordable_Drinks dsad (
@@ -129,41 +135,48 @@ KeyboardDecoder keyboard_de (
 	.clk(clk)
 );
 
-/*
-State Control
+
+// State Control
 always @(posedge clk) begin
    if(rst_op == 1'b1) begin
        state <= INSERT_COIN;
+    end
     else begin
         if(general_div_sig == 1'b1)
             state <= next_state;
         else 
             state <= state;
-    end 
+    end
 end
-
 always @(*) begin
-    case(state):
-        INSERT_COIN: 
-
+    case(state)
+        INSERT_COIN:  begin
+            if (goto_buy == 1'b1)
+                next_state = BUY_DRINK;
+            else if (goto_return == 1'b1)
+                next_state = RETURN_MONEY;
+            else    
+                next_state = INSERT_COIN; 
+        end
+        BUY_DRINK: begin
+            if (goto_return == 1'b1)
+                next_state = RETURN_MONEY;
+            else
+                next_state = BUY_DRINK;
+        end
+        RETURN_MONEY: begin
+            if (goto_return == 1'b0)
+                next_state = INSERT_COIN; 
+            else
+                next_state = RETURN_MONEY;
+        end
+        default: begin
+            next_state = next_state;
+        end
+    endcase
 end
-*/
-
 
 // Money Control
-always @(posedge clk) begin
-    if (rst_op == 1'b1) begin
-        current_money <= 8'd0;
-    end
-    else  begin
-        if (general_div_sig == 1'b1)
-            current_money <= next_money;
-        else
-            current_money <= current_money;
-    end
-end
-
-/*
 always @(posedge clk) begin
     if (rst_op == 1'b1) begin
         current_money <= 8'd0;
@@ -176,27 +189,37 @@ always @(posedge clk) begin
                 current_money <= current_money;
         end
         else if (state == BUY_DRINK) begin
-            if (state == second_div_sig)
-
+            if (general_div_sig == 1'b1)
+                current_money <= next_money_cost;
+            else
+                current_money <= current_money;
+        end
+        else if (state == RETURN_MONEY) begin
+            if(second_div_sig == 1'b1)
+                current_money <= next_money_return;
+            else
+                current_money <= current_money;        
+        end
+        else begin
+            current_money <= current_money;
+        end
     end
 end
-*/
 
+// Money Control: Insert Coin
 always @(*) begin
     collect_coin = 8'd0;
-    buy_cost = 8'd0;
 
-    // insert coin
     if (inst_5_op == 1'b1) begin
-        collect_coin = collect_coin + 8'd5;
+        collect_coin = 8'd5;
     end
     else begin
         if (inst_10_op == 1'b1) begin
-            collect_coin = collect_coin + 8'd10;
+            collect_coin = 8'd10;
         end
         else begin
             if (inst_50_op == 1'b1) begin
-                collect_coin = collect_coin + 8'd50; 
+                collect_coin = 8'd50; 
             end
             else begin
                 collect_coin = collect_coin;
@@ -204,20 +227,79 @@ always @(*) begin
         end
     end
 
-    // buy drinks
-    // if (press_A) begin
-        
-    // end
-    // else begin
-        
-    // end
-    
     next_money = current_money + collect_coin;
 
     if(next_money > 8'd99)
         next_money = 8'd99;
     else
         next_money = next_money;
+end
+
+// Buy drink
+always @(*) begin
+    buy_cost = 8'd0;
+    goto_buy = 1'b0;
+
+    if (state == INSERT_COIN) begin
+        if (press_A) begin
+            buy_cost = 8'd60;
+            goto_buy = 1'b1;
+        end
+        else begin
+            if (press_S) begin
+                buy_cost = 8'd30; 
+                goto_buy = 1'b1;
+            end
+            else begin
+                if (press_D) begin
+                    buy_cost = 8'd25; 
+                    goto_buy = 1'b1;
+                end
+                else begin
+                    if (press_F) begin
+                        buy_cost = 8'd20; 
+                        goto_buy = 1'b1;
+                    end
+                    else begin
+                        buy_cost = buy_cost;
+                        goto_buy = goto_buy;
+                    end
+                end
+            end
+        end
+        next_money_cost = current_money - buy_cost;
+    end
+    else begin
+        next_money_cost = current_money;
+    end
+end
+
+// Money Control: return money
+always @(*) begin
+    if (state == INSERT_COIN) begin
+        if (cancel_op == 1'b1)
+            goto_return = 1'b1;
+        else 
+            goto_return = 1'b0;
+    end
+    else if (state == BUY_DRINK) begin
+        if (current_money == 8'd0)
+            goto_return = 1'b1;
+        else
+            goto_return = 1'b0;
+    end
+    else if (state == RETURN_MONEY) begin
+        if(current_money == 8'd0)
+            goto_return = 1'b0;
+        else begin
+            goto_return = 1'b1;
+            next_money_return = current_money - 8'd5;
+        end
+    end
+    else begin
+        goto_return = 1'b0;
+        next_money_return = current_money;
+    end
 end
 
 
