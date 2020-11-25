@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 
 module FPGA_2 (
+    output reg gen_div_sig,
+    output reg inst50_cond,
     output [8-1:0] seg,
     output [4-1:0]  an,
     output [4-1:0]  LED_drinks_affordable,
@@ -32,6 +34,10 @@ reg press_S;
 reg press_D;
 reg press_F;
 
+// Clock Divider
+wire second_div_sig;
+wire general_div_sig;
+
 // State Control
 parameter INSERT_COIN = 2'b00;
 parameter BUT_DRINK = 2'b01;
@@ -45,33 +51,72 @@ reg [MONEY_BIT-1:0] current_money;
 reg [MONEY_BIT-1:0] next_money;
 reg [MONEY_BIT-1:0] collect_coin;
 
-// add debounce and one pulse to signals
+/* ---- debug ---- */
+always @(posedge clk) begin
+    if (general_div_sig == 1'b1 || gen_div_sig == 1'b1)
+        gen_div_sig <= 1'b1;
+    else
+        gen_div_sig <= 1'b0;
+end
+always @(posedge clk) begin
+    if (inst_50_op == 1'b1 || inst50_cond == 1'b1)
+        inst50_cond <= 1'b1;
+    else
+        inst50_cond <= 1'b0;
+end
+
+// Divide Clock
+Clock_Divider #(.DIV_TIME(32'd100_000_000)) clk_div_second  (
+   .div_sig(second_div_sig),
+   .rst(rst_op),
+   .clk(clk)
+);
+Clock_Divider #(.DIV_TIME(32'd100_000)) clk_div_general  (
+   .div_sig(general_div_sig),
+   .rst(rst_op),
+   .clk(clk)
+);
+
+
+// Debounce and Onepulse signals
 DeBounce_OnePulse #(.SIZE(4)) dbop_rst  (
     .sig_op(rst_op),
     .sig(rst),
-    .clk(clk)
+    .clk(clk),
+    .div_sig(general_div_sig)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_5  (
     .sig_op(inst_5_op),
     .sig(inst_5),
-    .clk(clk)
+    .clk(clk),
+    .div_sig(general_div_sig)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_10  (
     .sig_op(inst_10_op),
     .sig(inst_10),
-    .clk(clk)
+    .clk(clk),
+    .div_sig(general_div_sig)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_50  (
     .sig_op(inst_50_op),
     .sig(inst_50),
-    .clk(clk)
+    .clk(clk),
+    .div_sig(general_div_sig)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_cancel  (
     .sig_op(cancel_op),
     .sig(cancel),
-    .clk(clk)
+    .clk(clk),
+    .div_sig(general_div_sig)
 );
 
+Display_Money display_money (
+    .an(an),
+    .seg(seg),
+    .money(current_money),
+    .clk(clk),
+    .div_sig(second_div_sig)
+);
 
 Display_Affordable_Drinks dsad (
     .LED(LED_drinks_affordable),
@@ -84,19 +129,62 @@ KeyboardDecoder keyboard_de (
 	.key_valid(been_ready),
 	.PS2_DATA(PS2_DATA),
 	.PS2_CLK(PS2_CLK),
-	.rst(rst),
+	.rst(rst_op),
 	.clk(clk)
 );
 
+/*
+State Control
+always @(posedge clk) begin
+   if(rst_op == 1'b1) begin
+       state <= INSERT_COIN;
+    else begin
+        if(general_div_sig == 1'b1)
+            state <= next_state;
+        else 
+            state <= state;
+    end 
+end
+
+always @(*) begin
+    case(state):
+        INSERT_COIN: 
+
+end
+*/
+
+
 // Money Control
 always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    if (rst_op == 1'b1) begin
         current_money <= 8'd0;
     end
     else  begin
-        current_money <= next_money;
+        if (general_div_sig == 1'b1)
+            current_money <= next_money;
+        else
+            current_money <= current_money;
     end
 end
+
+/*
+always @(posedge clk) begin
+    if (rst_op == 1'b1) begin
+        current_money <= 8'd0;
+    end
+    else  begin
+        if (state == INSERT_COIN) begin
+            if (general_div_sig == 1'b1)
+                current_money <= next_money;
+            else
+                current_money <= current_money;
+        end
+        else if (state == BUY_DRINK) begin
+            if (state == second_div_sig)
+
+    end
+end
+*/
 
 always @(*) begin
     collect_coin = 8'd0;
@@ -150,6 +238,7 @@ module Display_Money (
     output reg [8-1:0] seg,
     input [8-1:0] money,
     input clk,
+    input div_sig
 );
 
 reg an_cnt;  // 1: 1101  0: 1110
@@ -157,15 +246,21 @@ reg [8-1:0] first_digit;
 
 // an control
 always @(posedge clk) begin
-    an_cnt <= an_cnt + 1'b01;
+    if (div_sig == 1'b1)
+        an_cnt <= an_cnt + 1'b1;
+    else
+        an_cnt <= an_cnt;
 end
 always @(*) begin
-    an = (an_cnt == 1'b1) ? 4'b1101 : 4'b1110;
+    if (an_cnt == 1'b1)
+        an = 4'b1101;
+    else
+        an = 4'b1110;
 end
 
 // seg control
 always @(*) begin
-    if (ant_cnt == 1'b1) begin  // show 10's digit
+    if (an_cnt == 1'b1) begin  // show 10's digit
         if (money >= 8'd90)
             set_seg(4'd9);
         else if (money >= 8'd80)
@@ -189,24 +284,25 @@ always @(*) begin
     end
     else begin  // show 1's digit
         first_digit = money;
-        if (first_digit > 9) begin
-            first_digit = first_digit - 10;
-            if(first_digit > 9) begin
-                first_digit = first_digit - 10;
-                if(first_digit > 9) begin
-                    first_digit = first_digit - 10;
-                    if(first_digit > 9) begin
-                        first_digit = first_digit - 10;
-                        if(first_digit > 9) begin
-                            first_digit = first_digit - 10;
-                            if(first_digit > 9) begin
-                                first_digit = first_digit - 10;
-                                if(first_digit > 9) begin
-                                    first_digit = first_digit - 10;
-                                    if(first_digit > 9) begin
-                                        first_digit = first_digit - 10;
-                                        if(first_digit > 9) begin
-                                            first_digit = first_digit - 10;
+        if (first_digit > 8'd9) begin
+            first_digit = first_digit - 8'd10;
+            if(first_digit > 8'd9) begin
+                first_digit = first_digit - 8'd10;
+                if(first_digit > 8'd9) begin
+                    first_digit = first_digit - 8'd10;
+                    if(first_digit > 8'd9) begin
+                        first_digit = first_digit - 8'd10;
+                        if(first_digit > 8'd9) begin
+                            first_digit = first_digit - 8'd10;
+                            if(first_digit > 8'd9) begin
+                                first_digit = first_digit - 8'd10;
+                                if(first_digit > 8'd9) begin
+                                    first_digit = first_digit - 8'd10;
+                                    if(first_digit > 8'd9) begin
+                                        first_digit = first_digit - 8'd10;
+                                        if(first_digit > 8'd9) begin
+                                            first_digit = first_digit - 8'd10;
+                                            set_seg(first_digit[3:0]);
                                         end
                                         else begin
                                             set_seg(first_digit[3:0]);
@@ -247,7 +343,7 @@ always @(*) begin
 
 end
 
-task set_seg(input [3:0] digit)
+task set_seg(input [3:0] digit);
 begin
     case(digit) 
         4'd0: seg = 8'b00000011;
@@ -288,18 +384,41 @@ end
 endmodule
 
 module Clock_Divider(
-    output div_sig,
+    output reg div_sig,
+    input rst,
     input clk
 );
 
-//parameter DIV_TIME = ;
+parameter DIV_TIME = 32'd100_000;
+reg [32-1:0] cnt;
+
+always @(posedge clk) begin
+    if (rst == 1'b1) begin
+        cnt <= 32'd0;
+    end
+    else begin
+        if (cnt < DIV_TIME)
+            cnt <= cnt + 32'd1;
+        else 
+            cnt <= 32'd0;
+            // cnt <= cnt;
+    end
+end
+
+always @(*) begin
+    if (cnt < DIV_TIME) 
+        div_sig = 1'b0;
+    else
+        div_sig = 1'b1;
+end
 
 endmodule
 
 module DeBounce_OnePulse (
-    output sig_op,
+    output reg sig_op,
     input sig,
-    input clk
+    input clk,
+    input div_sig
 );
 
 parameter SIZE = 4;
@@ -307,20 +426,34 @@ parameter SIZE = 4;
 // Debounce
 reg [SIZE-1:0] dff;
 reg sig_db;
+// Onepulse
+reg sig_delay;
 
 always @(posedge clk) begin
-    dff[SIZE-1:1] <= dff[SIZE-1-1:0];
-    dff[0]   <= sig;
+    if(div_sig == 1'b1) begin
+        dff[SIZE-1:1] <= dff[SIZE-1-1:0];
+        dff[0]   <= sig;
+    end
+    else
+        dff[SIZE-1:0] <= dff[SIZE-1:0];
 end
 always @(*) begin
     sig_db = &dff;
 end
 
-// OnePulse
-OnePulse op (
-    .signal_single_pulse(sig_op),
-	.signal(sig_db),
-	.clock(clk)
-);
+always @(posedge clk) begin
+    if (div_sig == 1'b1) begin 
+        if (sig_db == 1'b1 & sig_delay == 1'b0) begin
+            sig_op <= 1'b1;
+        end
+        else begin
+            sig_op <= 1'b0;
+        end
+        sig_delay <= sig_db;
+    end
+    else begin
+        sig_delay <= sig_delay;
+    end
+end
 
 endmodule
