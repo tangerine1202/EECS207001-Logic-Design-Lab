@@ -2,7 +2,7 @@
 
 module FPGA_2 (
     output reg gen_div_sig,
-    output reg inst50_cond,
+    output inst50_cond,
     output [8-1:0] seg,
     output [4-1:0]  an,
     output [4-1:0]  LED_drinks_affordable,
@@ -50,19 +50,15 @@ parameter MONEY_BIT = 8;
 reg [MONEY_BIT-1:0] current_money;
 reg [MONEY_BIT-1:0] next_money;
 reg [MONEY_BIT-1:0] collect_coin;
+reg [MONEY_BIT-1:0] buy_cost;
 
 /* ---- debug ---- */
+assign inst50_cond = inst_50_op;
 always @(posedge clk) begin
-    if (general_div_sig == 1'b1 || gen_div_sig == 1'b1)
+    if (second_div_sig == 1'b1 || gen_div_sig == 1'b1)
         gen_div_sig <= 1'b1;
     else
         gen_div_sig <= 1'b0;
-end
-always @(posedge clk) begin
-    if (inst_50_op == 1'b1 || inst50_cond == 1'b1)
-        inst50_cond <= 1'b1;
-    else
-        inst50_cond <= 1'b0;
 end
 
 // Divide Clock
@@ -188,7 +184,9 @@ end
 
 always @(*) begin
     collect_coin = 8'd0;
+    buy_cost = 8'd0;
 
+    // insert coin
     if (inst_5_op == 1'b1) begin
         collect_coin = collect_coin + 8'd5;
     end
@@ -205,6 +203,14 @@ always @(*) begin
             end
         end
     end
+
+    // buy drinks
+    // if (press_A) begin
+        
+    // end
+    // else begin
+        
+    // end
     
     next_money = current_money + collect_coin;
 
@@ -393,16 +399,20 @@ parameter DIV_TIME = 32'd100_000;
 reg [32-1:0] cnt;
 
 always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    // if (rst == 1'b1) begin
+    //     cnt <= 32'd0;
+    // end
+    // else begin
+    //     if (cnt < DIV_TIME)
+    //         cnt <= cnt + 32'd1;
+    //     else 
+    //         cnt <= 32'd0;
+    //         // cnt <= cnt;
+    // end
+    if (cnt < DIV_TIME)
+        cnt <= cnt + 32'd1;
+    else 
         cnt <= 32'd0;
-    end
-    else begin
-        if (cnt < DIV_TIME)
-            cnt <= cnt + 32'd1;
-        else 
-            cnt <= 32'd0;
-            // cnt <= cnt;
-    end
 end
 
 always @(*) begin
@@ -443,12 +453,10 @@ end
 
 always @(posedge clk) begin
     if (div_sig == 1'b1) begin 
-        if (sig_db == 1'b1 & sig_delay == 1'b0) begin
+        if (sig_db == 1'b1 & sig_delay == 1'b0)
             sig_op <= 1'b1;
-        end
-        else begin
+        else
             sig_op <= 1'b0;
-        end
         sig_delay <= sig_db;
     end
     else begin
