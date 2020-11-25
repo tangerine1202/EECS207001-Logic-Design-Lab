@@ -36,7 +36,7 @@ module Musical_Scale_fpga (
   reg kb2_pressed;
 
   wire speed_state;    // 0: 0.5 sec, 1: 1 sec
-  wire beatFreq;       // div_sig for ascending / descending
+  wire beat_freq;       // div_sig for ascending / descending
 
   wire [4:0] tone_idx;
   wire [31:0] freq;
@@ -63,13 +63,13 @@ module Musical_Scale_fpga (
                  .clk(clk),
                  .rst(rst),
                  .speed_state(speed_state),
-                 .div_sig(beatFreq)
+                 .div_sig(beat_freq)
                );
 
   ToneController tone_controller (
                    .clk(clk),
                    .rst(rst),
-                   .beatFreq(beatFreq),
+                   .beat_freq(beat_freq),
                    .asc_ctrl(kb0_pressed),
                    .dsc_ctrl(kb1_pressed),
                    .tone_idx(tone_idx)
@@ -182,7 +182,7 @@ endmodule
 module ToneController (
     input clk,
     input rst,
-    input beatFreq,
+    input beat_freq,
     input asc_ctrl,
     input dsc_ctrl,
     output reg [4:0] tone_idx
@@ -201,7 +201,7 @@ module ToneController (
     if (rst == 1'b1)
       tone_idx <= 5'd0;
     else
-      if (beatFreq == 1'b1)
+      if (beat_freq == 1'b1)
         tone_idx <= next_tone_idx;
       else
         tone_idx <= tone_idx;
