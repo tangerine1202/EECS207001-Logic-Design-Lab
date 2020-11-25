@@ -14,11 +14,11 @@ module FPGA_2 (
     inout wire PS2_CLK
 );
 
+// Keyboard Press
 parameter KB_A = 9'h1C;
 parameter KB_S = 9'h1B;
 parameter KB_D = 9'h23;
 parameter KB_F = 9'h2B;
-
 wire [511:0] key_down;
 wire [8:0] last_change;
 wire been_ready;
@@ -32,8 +32,15 @@ reg press_S;
 reg press_D;
 reg press_F;
 
+// State Control
+parameter INSERT_COIN = 2'b00;
+parameter BUT_DRINK = 2'b01;
+parameter RETURN_MONEY = 2'b10;
+reg [1:0] state;
+reg [1:0] next_state;
+
 // Money Control
-parameter MONEY_BIT = 9;
+parameter MONEY_BIT = 8;
 reg [MONEY_BIT-1:0] current_money;
 reg [MONEY_BIT-1:0] next_money;
 reg [MONEY_BIT-1:0] collect_coin;
@@ -84,7 +91,7 @@ KeyboardDecoder keyboard_de (
 // Money Control
 always @(posedge clk) begin
     if (rst == 1'b1) begin
-        current_money <= 9'd0;
+        current_money <= 8'd0;
     end
     else  begin
         current_money <= next_money;
@@ -92,18 +99,18 @@ always @(posedge clk) begin
 end
 
 always @(*) begin
-    collect_coin = 9'd0;
+    collect_coin = 8'd0;
 
-    if (inst_50_op == 1'b1) begin
-        collect_coin = collect_coin + 9'd5;
+    if (inst_5_op == 1'b1) begin
+        collect_coin = collect_coin + 8'd5;
     end
     else begin
         if (inst_10_op == 1'b1) begin
-            collect_coin = collect_coin + 9'd10;
+            collect_coin = collect_coin + 8'd10;
         end
         else begin
             if (inst_50_op == 1'b1) begin
-                collect_coin = collect_coin + 9'd50; 
+                collect_coin = collect_coin + 8'd50; 
             end
             else begin
                 collect_coin = collect_coin;
@@ -113,8 +120,8 @@ always @(*) begin
     
     next_money = current_money + collect_coin;
 
-    if(next_money > 9'd99)
-        next_money = 9'd99;
+    if(next_money > 8'd99)
+        next_money = 8'd99;
     else
         next_money = next_money;
 end
@@ -138,86 +145,141 @@ end
 
 endmodule
 
-// module Display_Money (
-//     output reg [4-1:0] an,
-//     output reg [8-1:0] sig,
-//     input [9-1:0] money,
-//     input clk,
-// );
+module Display_Money (
+    output reg [4-1:0] an,
+    output reg [8-1:0] seg,
+    input [8-1:0] money,
+    input clk,
+);
 
-// reg an_cnt;  // 1: 1101  0: 1110
+reg an_cnt;  // 1: 1101  0: 1110
+reg [8-1:0] first_digit;
 
-// // an control
-// always @(posedge clk) begin
-//     an_cnt <= an_cnt + 1'b01;
-// end
-// always @(*) begin
-//     an = (an_cnt == 1'b1) ? 4'b1101 : 4'b1110;
-// end
+// an control
+always @(posedge clk) begin
+    an_cnt <= an_cnt + 1'b01;
+end
+always @(*) begin
+    an = (an_cnt == 1'b1) ? 4'b1101 : 4'b1110;
+end
 
-// // sig control
-// always @(*) begin
-//     if (ant_cnt == 1'b1) begin
-//         if (money >= 8'd90)
-//             set_sig(4'd9);
-//         else if (money >= 8'd80)
-//             set_sig(4'd8);
-//         else if (money >= 8'd70)
-//             set_sig(4'd7);
-//         else if (money >= 8'd60)
-//             set_sig(4'd6);
-//         else if (money >= 8'd50)
-//             set_sig(4'd5);
-//         else if (money >= 8'd40)
-//             set_sig(4'd4);
-//         else if (money >= 8'd30)
-//             set_sig(4'd3);
-//         else if (money >= 8'd20)
-//             set_sig(4'd2);
-//         else if (money >= 8'd10)
-//             set_sig(4'd1);
-//         else
-//             set_sig(4'd0);
-//     end
-//     else begin
-            // BCD()
-//     end
+// seg control
+always @(*) begin
+    if (ant_cnt == 1'b1) begin  // show 10's digit
+        if (money >= 8'd90)
+            set_seg(4'd9);
+        else if (money >= 8'd80)
+            set_seg(4'd8);
+        else if (money >= 8'd70)
+            set_seg(4'd7);
+        else if (money >= 8'd60)
+            set_seg(4'd6);
+        else if (money >= 8'd50)
+            set_seg(4'd5);
+        else if (money >= 8'd40)
+            set_seg(4'd4);
+        else if (money >= 8'd30)
+            set_seg(4'd3);
+        else if (money >= 8'd20)
+            set_seg(4'd2);
+        else if (money >= 8'd10)
+            set_seg(4'd1);
+        else
+            set_seg(4'd0);
+    end
+    else begin  // show 1's digit
+        first_digit = money;
+        if (first_digit > 9) begin
+            first_digit = first_digit - 10;
+            if(first_digit > 9) begin
+                first_digit = first_digit - 10;
+                if(first_digit > 9) begin
+                    first_digit = first_digit - 10;
+                    if(first_digit > 9) begin
+                        first_digit = first_digit - 10;
+                        if(first_digit > 9) begin
+                            first_digit = first_digit - 10;
+                            if(first_digit > 9) begin
+                                first_digit = first_digit - 10;
+                                if(first_digit > 9) begin
+                                    first_digit = first_digit - 10;
+                                    if(first_digit > 9) begin
+                                        first_digit = first_digit - 10;
+                                        if(first_digit > 9) begin
+                                            first_digit = first_digit - 10;
+                                        end
+                                        else begin
+                                            set_seg(first_digit[3:0]);
+                                        end
+                                    end
+                                    else begin
+                                        set_seg(first_digit[3:0]);
+                                    end
+                                end
+                                else begin
+                                    set_seg(first_digit[3:0]);
+                                end
+                            end
+                            else begin
+                                set_seg(first_digit[3:0]);
+                            end
+                        end
+                        else begin
+                            set_seg(first_digit[3:0]);
+                        end
+                    end
+                    else begin
+                        set_seg(first_digit[3:0]);
+                    end
+                end
+                else begin
+                    set_seg(first_digit[3:0]);
+                end
+            end
+            else begin
+                set_seg(first_digit[3:0]);
+            end
+        end
+        else begin
+            set_seg(first_digit[3:0]);
+        end
+    end
 
-// end
+end
 
-// task set_sig(input [3:0] digit)
-// begin
-//     case(digit) 
-//         4'd0:
-//         4'd1:
-//         4'd2:
-//         4'd3:
-//         4'd4:
-//         4'd5:
-//         4'd6:
-//         4'd7:
-//         4'd8:
-//         4'd9:
-//         default:
-//     endcase
-// end
-// endtask
+task set_seg(input [3:0] digit)
+begin
+    case(digit) 
+        4'd0: seg = 8'b00000011;
+        4'd1: seg = 8'b10011111;
+        4'd2: seg = 8'b00100101;
+        4'd3: seg = 8'b00001101;
+        4'd4: seg = 8'b10011001;
+        4'd5: seg = 8'b01001001;
+        4'd6: seg = 8'b01000001;
+        4'd7: seg = 8'b00011111;
+        4'd8: seg = 8'b00000001;
+        4'd9: seg = 8'b00001001;
+        default: seg = 8'b01100000;  // error
+    endcase
+end
+endtask
 
-// endmodule
+endmodule
 
 module Display_Affordable_Drinks (
     output reg [4-1:0] LED,
-    input [9-1:0] money
+    input [8-1:0] money
 );
 
 always @(*) begin
-    if (money >= 9'd60)
+    if (money >= 8'd60)
         LED[3:0] = 4'b1111;
-    else if (money >= 9'd30)
+    else if (money >= 8'd30)
         LED[3:0] = 4'b0111;
-    else if (money >= 9'd25)
+    else if (money >= 8'd25)
         LED[3:0] = 4'b0011;
-    else if (money >= 9'd20)
+    else if (money >= 8'd20)
         LED[3:0] = 4'b0001;
     else
         LED[3:0] = 4'b0000;
