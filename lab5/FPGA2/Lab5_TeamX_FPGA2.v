@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 
 module FPGA_2 (
-    output reg [8-1:0] seg,
-    output reg [4-1:0]  an,
-    output reg [4-1:0]  LED_drinks_affordable,
+    output [8-1:0] seg,
+    output [4-1:0]  an,
+    output [4-1:0]  LED_drinks_affordable,
     input clk,
     input rst,      // top
     input inst_5,   // left
@@ -11,7 +11,7 @@ module FPGA_2 (
     input inst_50,  // right
     input cancel,   // down
     inout wire PS2_DATA,
-    inout wire PS2_CLK,
+    inout wire PS2_CLK
 );
 
 parameter KB_A = 9'h1C;
@@ -19,54 +19,55 @@ parameter KB_S = 9'h1B;
 parameter KB_D = 9'h23;
 parameter KB_F = 9'h2B;
 
-reg [511:0] key_down;
-reg [8:0] last_change;
-reg been_ready;
-reg rst_op;
-reg inst_5_op;
-reg inst_10_op;
-reg inst_50_op;
-reg cancel_op;
+wire [511:0] key_down;
+wire [8:0] last_change;
+wire been_ready;
+wire rst_op;
+wire inst_5_op;
+wire inst_10_op;
+wire inst_50_op;
+wire cancel_op;
 reg press_A;
 reg press_S;
 reg press_D;
 reg press_F;
 
 // Money Control
-reg [8-1:0] current_money;
-reg [8-1:0] next_money;
-reg [8-1:0] collect_coin;
+parameter MONEY_BIT = 9;
+reg [MONEY_BIT-1:0] current_money;
+reg [MONEY_BIT-1:0] next_money;
+reg [MONEY_BIT-1:0] collect_coin;
 
 // add debounce and one pulse to signals
 DeBounce_OnePulse #(.SIZE(4)) dbop_rst  (
-    .sig_db(rst_op),
+    .sig_op(rst_op),
     .sig(rst),
     .clk(clk)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_5  (
-    .sig_db(inst_5_op),
+    .sig_op(inst_5_op),
     .sig(inst_5),
     .clk(clk)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_10  (
-    .sig_db(inst_10_op),
+    .sig_op(inst_10_op),
     .sig(inst_10),
     .clk(clk)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_50  (
-    .sig_db(inst_50_op),
+    .sig_op(inst_50_op),
     .sig(inst_50),
     .clk(clk)
 );
 DeBounce_OnePulse #(.SIZE(4)) dbop_inst_cancel  (
-    .sig_db(cancel_op),
+    .sig_op(cancel_op),
     .sig(cancel),
     .clk(clk)
 );
 
 
 Display_Affordable_Drinks dsad (
-    .LED(LED_drinks_affordable)
+    .LED(LED_drinks_affordable),
     .money(current_money)
 );
 
@@ -75,7 +76,7 @@ KeyboardDecoder keyboard_de (
 	.last_change(last_change),
 	.key_valid(been_ready),
 	.PS2_DATA(PS2_DATA),
-	.PS2_CLK,(PS2_CLK),
+	.PS2_CLK(PS2_CLK),
 	.rst(rst),
 	.clk(clk)
 );
@@ -83,7 +84,7 @@ KeyboardDecoder keyboard_de (
 // Money Control
 always @(posedge clk) begin
     if (rst == 1'b1) begin
-        current_money <= 8'd0;
+        current_money <= 9'd0;
     end
     else  begin
         current_money <= next_money;
@@ -91,18 +92,18 @@ always @(posedge clk) begin
 end
 
 always @(*) begin
-    collect_coin = 8'd0;
+    collect_coin = 9'd0;
 
     if (inst_50_op == 1'b1) begin
-        collect_coin = collect_coin + 8'd5;
+        collect_coin = collect_coin + 9'd5;
     end
     else begin
         if (inst_10_op == 1'b1) begin
-            collect_coin = collect_coin + 8'd10;
+            collect_coin = collect_coin + 9'd10;
         end
         else begin
             if (inst_50_op == 1'b1) begin
-                collect_coin = collect_coin + 8'd50; 
+                collect_coin = collect_coin + 9'd50; 
             end
             else begin
                 collect_coin = collect_coin;
@@ -110,10 +111,10 @@ always @(*) begin
         end
     end
     
-    next_money = money + collect_coin;
+    next_money = current_money + collect_coin;
 
-    if(next_money > 8'd99)
-        next_money = 8'd99;
+    if(next_money > 9'd99)
+        next_money = 9'd99;
     else
         next_money = next_money;
 end
@@ -140,7 +141,7 @@ endmodule
 // module Display_Money (
 //     output reg [4-1:0] an,
 //     output reg [8-1:0] sig,
-//     input [8-1:0] money,
+//     input [9-1:0] money,
 //     input clk,
 // );
 
@@ -206,17 +207,17 @@ endmodule
 
 module Display_Affordable_Drinks (
     output reg [4-1:0] LED,
-    input [8-1:0] money,
+    input [9-1:0] money
 );
 
 always @(*) begin
-    if (money >= 8'd60)
+    if (money >= 9'd60)
         LED[3:0] = 4'b1111;
-    else if (money >= 8'd30)
+    else if (money >= 9'd30)
         LED[3:0] = 4'b0111;
-    else if (money >= 8'd25)
+    else if (money >= 9'd25)
         LED[3:0] = 4'b0011;
-    else if (money >= 8'd20)
+    else if (money >= 9'd20)
         LED[3:0] = 4'b0001;
     else
         LED[3:0] = 4'b0000;
@@ -226,18 +227,18 @@ endmodule
 
 module Clock_Divider(
     output div_sig,
-    input clk,
+    input clk
 );
 
-parameter DIV_TIME = ;
+//parameter DIV_TIME = ;
 
 endmodule
 
 module DeBounce_OnePulse (
-    output sig_op;
-    input sig;
-    input clk,
-)
+    output sig_op,
+    input sig,
+    input clk
+);
 
 parameter SIZE = 4;
 
@@ -257,7 +258,7 @@ end
 OnePulse op (
     .signal_single_pulse(sig_op),
 	.signal(sig_db),
-	.clock(clk),
+	.clock(clk)
 );
 
 endmodule
