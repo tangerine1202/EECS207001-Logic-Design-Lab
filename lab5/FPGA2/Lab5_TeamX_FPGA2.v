@@ -40,21 +40,19 @@ reg press_F;
 wire second_div_sig;
 wire display_div_sig;
 
-reg state;
+wire state;
 wire [7:0] coins;
 
 
 // Divide Clock
-Clock_Divider #(.DIV_TIME(32'd100_000_000)) clk_div_second  (
-   .div_sig(second_div_sig),
-   .rst(rst_op),
-   .state(state),
-   .clk(clk)
-);
+// Clock_Divider #(.DIV_TIME(32'd100_000_000)) clk_div_second  (
+//   .div_sig(second_div_sig),
+//    .rst(rst_op),
+//    .clk(clk)
+// );
 Clock_Divider #(.DIV_TIME(32'd100_000)) clk_div_general  (
    .div_sig(display_div_sig),
    .rst(rst_op),
-   .state(state),
    .clk(clk)
 );
 
@@ -94,7 +92,6 @@ DeBounce_OnePulse #(.SIZE(8)) dbop_inst_cancel  (
 
 Vending_Machine vending_machine (
     .clk(clk),
-    .second_div_sig(second_div_sig),
     // .display_div_sig(display_div_sig),
     .rst(rst_op),
     .insert_5_op(insert_5_op),
@@ -105,7 +102,7 @@ Vending_Machine vending_machine (
     .press_S(press_S),
     .press_D(press_D),
     .press_F(press_F),
-    .state(state),
+    // .second_div_sig(second_div_sig),
     .affordable_drinks(affordable_drinks),
     .coins(coins)
 );
@@ -151,7 +148,7 @@ endmodule
 
 module Vending_Machine (
     input clk,
-    input second_div_sig,
+//    input second_div_sig,
     // input display_div_sig,
     input rst,
     input insert_5_op,
@@ -162,7 +159,6 @@ module Vending_Machine (
     input press_S,
     input press_D,
     input press_F,
-    output state,
     output [3:0] affordable_drinks,
     output reg [7:0] coins
 );
@@ -170,9 +166,31 @@ module Vending_Machine (
 parameter INSERT_STATE = 1'b0;
 parameter RETURN_STATE = 1'b1;
 
+reg [31:0] second_cnt;
+wire second_div_sig;
+
 reg state;
 reg next_state;
 reg [7:0] next_coins;
+
+// Generate 1 second clk div_sig
+always @(posedge clk) begin
+    if (rst == 1'b1)
+        second_cnt <= 32'd0;
+    else begin
+        if (state == INSERT_STATE && next_state == RETURN_STATE)
+            second_cnt <= 32'd0;
+        else begin
+            if (second_cnt >= 32'd100_000_000)
+                second_cnt <= 32'd0;
+            else
+                second_cnt <= second_cnt + 32'd1;
+        end
+    end
+end
+
+assign second_div_sig = (second_cnt == 32'd100_000_000) ? 1'b1 : 1'b0;
+
 
 assign affordable_drinks[3] = (coins < 8'd60) ? 1'b0 : 1'b1;
 assign affordable_drinks[2] = (coins < 8'd30) ? 1'b0 : 1'b1;
@@ -306,7 +324,7 @@ module Display_Coins (
 );
 
 reg an_cnt;  // 1: 1101  0: 1110
-reg [4-1:0] first_digit;
+reg [8-1:0] first_digit;
 
 // an control
 always @(posedge clk) begin
@@ -343,11 +361,61 @@ always @(*) begin
             set_seg(4'd0);
     end
     else begin  // show 1's digit
-        first_digit = money[3:0];
-        if (first_digit < 4'd10)
-            set_seg(first_digit[3:0]);
+        first_digit = coins;
+        if (first_digit > 8'd9) begin
+            first_digit = first_digit - 8'd10;
+            if(first_digit > 8'd9) begin
+                first_digit = first_digit - 8'd10;
+                if(first_digit > 8'd9) begin
+                    first_digit = first_digit - 8'd10;
+                    if(first_digit > 8'd9) begin
+                        first_digit = first_digit - 8'd10;
+                        if(first_digit > 8'd9) begin
+                            first_digit = first_digit - 8'd10;
+                            if(first_digit > 8'd9) begin
+                                first_digit = first_digit - 8'd10;
+                                if(first_digit > 8'd9) begin
+                                    first_digit = first_digit - 8'd10;
+                                    if(first_digit > 8'd9) begin
+                                        first_digit = first_digit - 8'd10;
+                                        if(first_digit > 8'd9) begin
+                                            first_digit = first_digit - 8'd10;
+                                            set_seg(first_digit[3:0]);
+                                        end
+                                        else begin
+                                            set_seg(first_digit[3:0]);
+                                        end
+                                    end
+                                    else begin
+                                        set_seg(first_digit[3:0]);
+                                    end
+                                end
+                                else begin
+                                    set_seg(first_digit[3:0]);
+                                end
+                            end
+                            else begin
+                                set_seg(first_digit[3:0]);
+                            end
+                        end
+                        else begin
+                            set_seg(first_digit[3:0]);
+                        end
+                    end
+                    else begin
+                        set_seg(first_digit[3:0]);
+                    end
+                end
+                else begin
+                    set_seg(first_digit[3:0]);
+                end
+            end
+            else begin
+                set_seg(first_digit[3:0]);
+            end
+        end
         else begin
-            set_seg(first_digit[3:0] - 4'd10);
+            set_seg(first_digit[3:0]);
         end
     end
 
@@ -377,8 +445,7 @@ endmodule
 module Clock_Divider(
     output reg div_sig,
     input rst,
-    input clk,
-    input state
+    input clk
 );
 
 parameter DIV_TIME = 32'd100_000;
@@ -386,7 +453,7 @@ reg [32-1:0] cnt;
 
 always @(posedge clk) begin
     // FIXME: 'state' please refer to 'RETURN_STATE' in Vending_Machine module
-    if (rst == 1'b1 || state == 1'b1) begin
+    if (rst == 1'b1) begin
         cnt <= 32'd0;
     end
     else begin
