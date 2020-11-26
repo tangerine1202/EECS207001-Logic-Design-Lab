@@ -35,9 +35,9 @@ initial begin
 
     reset;
     
-    dec1_ts;
-    #(`CYC*2) reset;
-    dec2_ts;
+    dec_ts;
+
+    random_ts;
 
     $finish;
 end
@@ -84,8 +84,20 @@ always @(*) begin
     end
 end
 
-// testcase for dec1
-task dec1_ts;
+
+task random_ts;
+begin
+    repeat (10000) begin
+        @(negedge clk) in = ^$urandom();
+        if(iter % 24 == 8'b0)
+            reset;
+        iter = iter + 8'd1;
+    end
+end
+endtask
+
+// testcase for all condition of two 4-bit
+task dec_ts;
 reg [4-1:0] i;
 begin
     repeat (2**8) begin
@@ -97,24 +109,6 @@ begin
                 One;
         end
         #(`CYC*2) reset;  // delay 2 clk to avoid concatenate situation and reset chk1_stop
-    end
-    iter = 8'b0000_0000;
-end
-endtask
-
-// testcase for dec2
-task dec2_ts;
-reg [4-1:0] i;
-begin
-    repeat (2**8) begin
-        iter = iter + 8'b0000_0001;
-        for(i = 4'd0; i < 4'd8; i = i+4'd1) begin
-            if (iter[i] == 1'b0)
-                Zero;
-            else
-                One;
-        end
-        #(`CYC*2) reset;  // delay 2 clk and reset to avoid concatenate situation and chk1 error
     end
     iter = 8'b0000_0000;
 end
@@ -192,6 +186,8 @@ begin
     @(negedge clk) rst_n = 1'b0;
     in = 1'b0;
     chk1_stop = 1'b0;
+    chk1_in = 4'b0000;
+    chk2_in = 4'b0000;
     @(negedge clk) rst_n = 1'b1;
 end
 endtask
