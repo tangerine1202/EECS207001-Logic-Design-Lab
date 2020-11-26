@@ -278,7 +278,7 @@ module Display_Money (
 );
 
 reg an_cnt;  // 1: 1101  0: 1110
-reg [8-1:0] first_digit;
+reg [4-1:0] first_digit;
 
 // an control
 always @(posedge clk) begin
@@ -315,61 +315,11 @@ always @(*) begin
             set_seg(4'd0);
     end
     else begin  // show 1's digit
-        first_digit = money;
-        if (first_digit > 8'd9) begin
-            first_digit = first_digit - 8'd10;
-            if(first_digit > 8'd9) begin
-                first_digit = first_digit - 8'd10;
-                if(first_digit > 8'd9) begin
-                    first_digit = first_digit - 8'd10;
-                    if(first_digit > 8'd9) begin
-                        first_digit = first_digit - 8'd10;
-                        if(first_digit > 8'd9) begin
-                            first_digit = first_digit - 8'd10;
-                            if(first_digit > 8'd9) begin
-                                first_digit = first_digit - 8'd10;
-                                if(first_digit > 8'd9) begin
-                                    first_digit = first_digit - 8'd10;
-                                    if(first_digit > 8'd9) begin
-                                        first_digit = first_digit - 8'd10;
-                                        if(first_digit > 8'd9) begin
-                                            first_digit = first_digit - 8'd10;
-                                            set_seg(first_digit[3:0]);
-                                        end
-                                        else begin
-                                            set_seg(first_digit[3:0]);
-                                        end
-                                    end
-                                    else begin
-                                        set_seg(first_digit[3:0]);
-                                    end
-                                end
-                                else begin
-                                    set_seg(first_digit[3:0]);
-                                end
-                            end
-                            else begin
-                                set_seg(first_digit[3:0]);
-                            end
-                        end
-                        else begin
-                            set_seg(first_digit[3:0]);
-                        end
-                    end
-                    else begin
-                        set_seg(first_digit[3:0]);
-                    end
-                end
-                else begin
-                    set_seg(first_digit[3:0]);
-                end
-            end
-            else begin
-                set_seg(first_digit[3:0]);
-            end
-        end
-        else begin
+        first_digit = money[3:0];
+        if (first_digit < 4'd10)
             set_seg(first_digit[3:0]);
+        else begin
+            set_seg(first_digit[3:0] - 4'd10);
         end
     end
 
