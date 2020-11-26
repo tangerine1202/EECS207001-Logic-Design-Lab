@@ -88,9 +88,9 @@ end
 task dec1_ts;
 reg [4-1:0] i;
 begin
-    repeat (2**6) begin
+    repeat (2**8) begin
         iter = iter + 8'b0000_0001;
-        for(i = 4'd0; i < 4'd6; i = i+4'd1) begin
+        for(i = 4'd0; i < 4'd8; i = i+4'd1) begin
             if (iter[i] == 1'b0)
                 Zero;
             else
