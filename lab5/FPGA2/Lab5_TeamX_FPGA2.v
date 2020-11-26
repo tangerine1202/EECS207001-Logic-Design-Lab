@@ -1,19 +1,19 @@
 `timescale 1ns/1ps
 
 module FPGA_2 (
-    output reg gen_div_sig,
-    output reg inst50_cond,
     output [8-1:0] seg,
-    output [4-1:0]  an,
-    output [4-1:0]  LED_drinks_affordable,
+    output [4-1:0] an,
+    output [4-1:0] affordable_drinks,
     input clk,
     input rst,      // top
-    input inst_5,   // left
-    input inst_10,  // center
-    input inst_50,  // right
+    input insert_5,   // left
+    input insert_10,  // center
+    input insert_50,  // right
     input cancel,   // down
     inout wire PS2_DATA,
-    inout wire PS2_CLK
+    inout wire PS2_CLK,
+    // FIXME: only for debug
+    input kb_rst
 );
 
 // Keyboard Press
@@ -24,11 +24,13 @@ parameter KB_F = 9'h2B;
 wire [511:0] key_down;
 wire [8:0] last_change;
 wire been_ready;
+
 wire rst_op;
-wire inst_5_op;
-wire inst_10_op;
-wire inst_50_op;
+wire insert_5_op;
+wire insert_10_op;
+wire insert_50_op;
 wire cancel_op;
+
 reg press_A;
 reg press_S;
 reg press_D;
@@ -36,188 +38,98 @@ reg press_F;
 
 // Clock Divider
 wire second_div_sig;
-wire general_div_sig;
+wire display_div_sig;
 
-// State Control
-parameter INSERT_COIN = 2'b00;
-parameter BUT_DRINK = 2'b01;
-parameter RETURN_MONEY = 2'b10;
-reg [1:0] state;
-reg [1:0] next_state;
+wire state;
+wire [7:0] coins;
 
-// Money Control
-parameter MONEY_BIT = 8;
-reg [MONEY_BIT-1:0] current_money;
-reg [MONEY_BIT-1:0] next_money;
-reg [MONEY_BIT-1:0] collect_coin;
-
-/* ---- debug ---- */
-always @(posedge clk) begin
-    if (general_div_sig == 1'b1 || gen_div_sig == 1'b1)
-        gen_div_sig <= 1'b1;
-    else
-        gen_div_sig <= 1'b0;
-end
-always @(posedge clk) begin
-    if (inst_50_op == 1'b1 || inst50_cond == 1'b1)
-        inst50_cond <= 1'b1;
-    else
-        inst50_cond <= 1'b0;
-end
 
 // Divide Clock
-Clock_Divider #(.DIV_TIME(32'd100_000_000)) clk_div_second  (
-   .div_sig(second_div_sig),
-   .rst(rst_op),
-   .clk(clk)
-);
+// Clock_Divider #(.DIV_TIME(32'd100_000_000)) clk_div_second  (
+//   .div_sig(second_div_sig),
+//    .rst(rst_op),
+//    .clk(clk)
+// );
 Clock_Divider #(.DIV_TIME(32'd100_000)) clk_div_general  (
-   .div_sig(general_div_sig),
+   .div_sig(display_div_sig),
    .rst(rst_op),
    .clk(clk)
 );
 
 
 // Debounce and Onepulse signals
-DeBounce_OnePulse #(.SIZE(4)) dbop_rst  (
+DeBounce_OnePulse #(.SIZE(8)) dbop_rst  (
     .sig_op(rst_op),
     .sig(rst),
-    .clk(clk),
-    .div_sig(general_div_sig)
+    .clk(clk)//,
+    // .div_sig(display_div_sig)
 );
-DeBounce_OnePulse #(.SIZE(4)) dbop_inst_5  (
-    .sig_op(inst_5_op),
-    .sig(inst_5),
-    .clk(clk),
-    .div_sig(general_div_sig)
+DeBounce_OnePulse #(.SIZE(8)) dbop_insert_5  (
+    .sig_op(insert_5_op),
+    .sig(insert_5),
+    .clk(clk)//,
+    // .div_sig(display_div_sig)
 );
-DeBounce_OnePulse #(.SIZE(4)) dbop_inst_10  (
-    .sig_op(inst_10_op),
-    .sig(inst_10),
-    .clk(clk),
-    .div_sig(general_div_sig)
+DeBounce_OnePulse #(.SIZE(8)) dbop_insert_10  (
+    .sig_op(insert_10_op),
+    .sig(insert_10),
+    .clk(clk)//,
+    // .div_sig(display_div_sig)
 );
-DeBounce_OnePulse #(.SIZE(4)) dbop_inst_50  (
-    .sig_op(inst_50_op),
-    .sig(inst_50),
-    .clk(clk),
-    .div_sig(general_div_sig)
+DeBounce_OnePulse #(.SIZE(8)) dbop_insert_50  (
+    .sig_op(insert_50_op),
+    .sig(insert_50),
+    .clk(clk)//,
+    // .div_sig(display_div_sig)
 );
-DeBounce_OnePulse #(.SIZE(4)) dbop_inst_cancel  (
+DeBounce_OnePulse #(.SIZE(8)) dbop_inst_cancel  (
     .sig_op(cancel_op),
     .sig(cancel),
-    .clk(clk),
-    .div_sig(general_div_sig)
+    .clk(clk)//,
+    // .div_sig(display_div_sig)
 );
 
-Display_Money display_money (
+
+Vending_Machine vending_machine (
+    .clk(clk),
+    // .display_div_sig(display_div_sig),
+    .rst(rst_op),
+    .insert_5_op(insert_5_op),
+    .insert_10_op(insert_10_op),
+    .insert_50_op(insert_50_op),
+    .cancel_op(cancel_op),
+    .press_A(press_A),
+    .press_S(press_S),
+    .press_D(press_D),
+    .press_F(press_F),
+    // .second_div_sig(second_div_sig),
+    .affordable_drinks(affordable_drinks),
+    .coins(coins)
+);
+
+Display_Coins display_coins (
     .an(an),
     .seg(seg),
-    .money(current_money),
+    .coins(coins),
     .clk(clk),
-    .div_sig(second_div_sig)
+    .div_sig(display_div_sig)
 );
 
-Display_Affordable_Drinks dsad (
-    .LED(LED_drinks_affordable),
-    .money(current_money)
-);
 
+// keyboard decoder
 KeyboardDecoder keyboard_de (
 	.key_down(key_down),
 	.last_change(last_change),
 	.key_valid(been_ready),
 	.PS2_DATA(PS2_DATA),
 	.PS2_CLK(PS2_CLK),
-	.rst(rst_op),
+	.rst(kb_rst),
 	.clk(clk)
 );
 
-/*
-State Control
+// Pre-process keyboard input
 always @(posedge clk) begin
-   if(rst_op == 1'b1) begin
-       state <= INSERT_COIN;
-    else begin
-        if(general_div_sig == 1'b1)
-            state <= next_state;
-        else 
-            state <= state;
-    end 
-end
-
-always @(*) begin
-    case(state):
-        INSERT_COIN: 
-
-end
-*/
-
-
-// Money Control
-always @(posedge clk) begin
-    if (rst_op == 1'b1) begin
-        current_money <= 8'd0;
-    end
-    else  begin
-        if (general_div_sig == 1'b1)
-            current_money <= next_money;
-        else
-            current_money <= current_money;
-    end
-end
-
-/*
-always @(posedge clk) begin
-    if (rst_op == 1'b1) begin
-        current_money <= 8'd0;
-    end
-    else  begin
-        if (state == INSERT_COIN) begin
-            if (general_div_sig == 1'b1)
-                current_money <= next_money;
-            else
-                current_money <= current_money;
-        end
-        else if (state == BUY_DRINK) begin
-            if (state == second_div_sig)
-
-    end
-end
-*/
-
-always @(*) begin
-    collect_coin = 8'd0;
-
-    if (inst_5_op == 1'b1) begin
-        collect_coin = collect_coin + 8'd5;
-    end
-    else begin
-        if (inst_10_op == 1'b1) begin
-            collect_coin = collect_coin + 8'd10;
-        end
-        else begin
-            if (inst_50_op == 1'b1) begin
-                collect_coin = collect_coin + 8'd50; 
-            end
-            else begin
-                collect_coin = collect_coin;
-            end
-        end
-    end
-    
-    next_money = current_money + collect_coin;
-
-    if(next_money > 8'd99)
-        next_money = 8'd99;
-    else
-        next_money = next_money;
-end
-
-
-// Press Button
-always @(posedge clk) begin
-    if (been_ready && key_down[last_change]) begin
+    if (been_ready && key_down[last_change] == 1'b1) begin
         press_A <= (last_change == KB_A) ? 1'b1 : 1'b0;
         press_S <= (last_change == KB_S) ? 1'b1 : 1'b0;
         press_D <= (last_change == KB_D) ? 1'b1 : 1'b0;
@@ -233,10 +145,180 @@ end
 
 endmodule
 
-module Display_Money (
-    output reg [4-1:0] an,
+
+module Vending_Machine (
+    input clk,
+//    input second_div_sig,
+    // input display_div_sig,
+    input rst,
+    input insert_5_op,
+    input insert_10_op,
+    input insert_50_op,
+    input cancel_op,
+    input press_A,
+    input press_S,
+    input press_D,
+    input press_F,
+    output [3:0] affordable_drinks,
+    output reg [7:0] coins
+);
+
+parameter INSERT_STATE = 1'b0;
+parameter RETURN_STATE = 1'b1;
+
+reg [31:0] second_cnt;
+wire second_div_sig;
+
+reg state;
+reg next_state;
+reg [7:0] next_coins;
+
+// Generate 1 second clk div_sig
+always @(posedge clk) begin
+    if (rst == 1'b1)
+        second_cnt <= 32'd0;
+    else begin
+        if (state == INSERT_STATE && next_state == RETURN_STATE)
+            second_cnt <= 32'd0;
+        else begin
+            if (second_cnt >= 32'd100_000_000)
+                second_cnt <= 32'd0;
+            else
+                second_cnt <= second_cnt + 32'd1;
+        end
+    end
+end
+
+assign second_div_sig = (second_cnt == 32'd100_000_000) ? 1'b1 : 1'b0;
+
+
+assign affordable_drinks[3] = (coins < 8'd60) ? 1'b0 : 1'b1;
+assign affordable_drinks[2] = (coins < 8'd30) ? 1'b0 : 1'b1;
+assign affordable_drinks[1] = (coins < 8'd25) ? 1'b0 : 1'b1;
+assign affordable_drinks[0] = (coins < 8'd20) ? 1'b0 : 1'b1;
+
+always @(posedge clk) begin
+    // if (display_div_sig == 1'b1) begin
+        if (rst == 1'b1) begin
+            state <= INSERT_STATE;
+            coins <= 8'd0;
+        end
+        else begin
+            if (state == RETURN_STATE) begin
+                if (second_div_sig == 1'b1) begin
+                    state <= next_state;
+                    coins <= next_coins;
+                end
+                else begin
+                    state <= state;
+                    coins <= coins;
+                end
+            end
+            else begin
+                state <= next_state;
+                coins <= next_coins;
+            end
+        end
+    // end
+    // else begin
+    //     state <= state;
+    //     coins <= coins;
+    // end
+end
+
+// Update 'coins'
+always @(*) begin
+    case (state)
+        INSERT_STATE: begin
+            // Insert coins
+            if (insert_5_op == 1'b1)
+                if (coins < 8'd99 - 8'd5)
+                    next_coins = coins + 8'd5;
+                else
+                    next_coins = 8'd99;
+            else if (insert_10_op == 1'b1)
+                if (coins < 8'd99 - 8'd10)
+                    next_coins = coins + 8'd10;
+                else
+                    next_coins = 8'd99;
+            else if (insert_50_op == 1'b1)
+                if (coins < 8'd99 - 8'd50)
+                    next_coins = coins + 8'd50;
+                else
+                    next_coins = 8'd99;
+            // Buy items
+            // $60
+            else if (press_A == 1'b1 && affordable_drinks[3] == 1'b1)
+                next_coins = coins - 8'd60;
+            // $30
+            else if (press_S == 1'b1 && affordable_drinks[2] == 1'b1)
+                next_coins = coins - 8'd30;
+            // $25
+            else if (press_D == 1'b1 && affordable_drinks[1] == 1'b1)
+                next_coins = coins - 8'd25;
+            // $20
+            else if (press_F == 1'b1 && affordable_drinks[0] == 1'b1)
+                next_coins = coins - 8'd20;
+            // cancel
+            else if (cancel_op == 1'b1)
+                next_coins = coins;
+            else
+                next_coins = coins;
+        end
+        RETURN_STATE: begin
+            if (coins < 8'd5)
+                next_coins = 8'd0;
+            else
+                next_coins = coins - 8'd5;
+        end
+        default: begin
+            next_coins = coins;
+        end
+    endcase
+end
+
+// Update state
+always @(*) begin
+    case (state)
+        INSERT_STATE: begin
+            // $60
+            if (press_A == 1'b1 && affordable_drinks[3] == 1'b1)
+                next_state = RETURN_STATE;
+            // $30
+            else if (press_S == 1'b1 && affordable_drinks[2] == 1'b1)
+                next_state = RETURN_STATE;
+            // $25
+            else if (press_D == 1'b1 && affordable_drinks[1] == 1'b1)
+                next_state = RETURN_STATE;
+            // $20
+            else if (press_F == 1'b1 && affordable_drinks[0] == 1'b1)
+                next_state = RETURN_STATE;
+            // cancel
+            else if (cancel_op == 1'b1 && coins > 8'd0)
+                next_state = RETURN_STATE;
+            else
+                next_state = state;
+        end
+        RETURN_STATE: begin
+            // FIXME: next_coins or coins == 0 ?
+            if (next_coins == 8'd0)
+                next_state = INSERT_STATE;
+            else
+                next_state = RETURN_STATE;
+        end
+        default: begin
+            next_state = RETURN_STATE;
+        end
+    endcase
+end
+
+
+endmodule
+
+module Display_Coins (
+    output [4-1:0] an,
     output reg [8-1:0] seg,
-    input [8-1:0] money,
+    input [8-1:0] coins,
     input clk,
     input div_sig
 );
@@ -251,39 +333,35 @@ always @(posedge clk) begin
     else
         an_cnt <= an_cnt;
 end
-always @(*) begin
-    if (an_cnt == 1'b1)
-        an = 4'b1101;
-    else
-        an = 4'b1110;
-end
+
+assign an[3:0] = (an_cnt == 1'b1) ? 4'b1101 : 4'b1110;
 
 // seg control
 always @(*) begin
     if (an_cnt == 1'b1) begin  // show 10's digit
-        if (money >= 8'd90)
+        if (coins >= 8'd90)
             set_seg(4'd9);
-        else if (money >= 8'd80)
+        else if (coins >= 8'd80)
             set_seg(4'd8);
-        else if (money >= 8'd70)
+        else if (coins >= 8'd70)
             set_seg(4'd7);
-        else if (money >= 8'd60)
+        else if (coins >= 8'd60)
             set_seg(4'd6);
-        else if (money >= 8'd50)
+        else if (coins >= 8'd50)
             set_seg(4'd5);
-        else if (money >= 8'd40)
+        else if (coins >= 8'd40)
             set_seg(4'd4);
-        else if (money >= 8'd30)
+        else if (coins >= 8'd30)
             set_seg(4'd3);
-        else if (money >= 8'd20)
+        else if (coins >= 8'd20)
             set_seg(4'd2);
-        else if (money >= 8'd10)
+        else if (coins >= 8'd10)
             set_seg(4'd1);
         else
             set_seg(4'd0);
     end
     else begin  // show 1's digit
-        first_digit = money;
+        first_digit = coins;
         if (first_digit > 8'd9) begin
             first_digit = first_digit - 8'd10;
             if(first_digit > 8'd9) begin
@@ -345,7 +423,7 @@ end
 
 task set_seg(input [3:0] digit);
 begin
-    case(digit) 
+    case(digit)
         4'd0: seg = 8'b00000011;
         4'd1: seg = 8'b10011111;
         4'd2: seg = 8'b00100101;
@@ -363,25 +441,6 @@ endtask
 
 endmodule
 
-module Display_Affordable_Drinks (
-    output reg [4-1:0] LED,
-    input [8-1:0] money
-);
-
-always @(*) begin
-    if (money >= 8'd60)
-        LED[3:0] = 4'b1111;
-    else if (money >= 8'd30)
-        LED[3:0] = 4'b0111;
-    else if (money >= 8'd25)
-        LED[3:0] = 4'b0011;
-    else if (money >= 8'd20)
-        LED[3:0] = 4'b0001;
-    else
-        LED[3:0] = 4'b0000;
-end
-
-endmodule
 
 module Clock_Divider(
     output reg div_sig,
@@ -393,20 +452,20 @@ parameter DIV_TIME = 32'd100_000;
 reg [32-1:0] cnt;
 
 always @(posedge clk) begin
+    // FIXME: 'state' please refer to 'RETURN_STATE' in Vending_Machine module
     if (rst == 1'b1) begin
         cnt <= 32'd0;
     end
     else begin
         if (cnt < DIV_TIME)
             cnt <= cnt + 32'd1;
-        else 
+        else
             cnt <= 32'd0;
-            // cnt <= cnt;
     end
 end
 
 always @(*) begin
-    if (cnt < DIV_TIME) 
+    if (cnt < DIV_TIME)
         div_sig = 1'b0;
     else
         div_sig = 1'b1;
@@ -417,43 +476,44 @@ endmodule
 module DeBounce_OnePulse (
     output reg sig_op,
     input sig,
-    input clk,
-    input div_sig
+    input clk//,
+    // input div_sig
 );
 
 parameter SIZE = 4;
 
 // Debounce
 reg [SIZE-1:0] dff;
-reg sig_db;
+wire sig_db;
+
+always @(posedge clk) begin
+    // if(div_sig == 1'b1) begin
+        dff[SIZE-1:1] <= dff[SIZE-1-1:0];
+        dff[0]        <= sig;
+    // end
+    // else
+    //     dff[SIZE-1:0] <= dff[SIZE-1:0];
+end
+
+assign sig_db = &dff;
+
 // Onepulse
 reg sig_delay;
-
 always @(posedge clk) begin
-    if(div_sig == 1'b1) begin
-        dff[SIZE-1:1] <= dff[SIZE-1-1:0];
-        dff[0]   <= sig;
-    end
-    else
-        dff[SIZE-1:0] <= dff[SIZE-1:0];
-end
-always @(*) begin
-    sig_db = &dff;
-end
-
-always @(posedge clk) begin
-    if (div_sig == 1'b1) begin 
-        if (sig_db == 1'b1 & sig_delay == 1'b0) begin
+    // if (div_sig == 1'b1) begin
+        // Calculate output signal
+        if (sig_db == 1'b1 & sig_delay == 1'b0)
             sig_op <= 1'b1;
-        end
-        else begin
+        else
             sig_op <= 1'b0;
-        end
+        // Update signal delay
         sig_delay <= sig_db;
-    end
-    else begin
-        sig_delay <= sig_delay;
-    end
+    // end
+    // else begin
+    //     // hold value
+    //     sig_op <= sig_op;
+    //     sig_delay <= sig_delay;
+    // end
 end
 
 endmodule
