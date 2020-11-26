@@ -191,12 +191,13 @@ end
 
 assign second_div_sig = (second_cnt == 32'd100_000_000) ? 1'b1 : 1'b0;
 
-
+// display affordable drinks
 assign affordable_drinks[3] = (coins < 8'd60) ? 1'b0 : 1'b1;
 assign affordable_drinks[2] = (coins < 8'd30) ? 1'b0 : 1'b1;
 assign affordable_drinks[1] = (coins < 8'd25) ? 1'b0 : 1'b1;
 assign affordable_drinks[0] = (coins < 8'd20) ? 1'b0 : 1'b1;
 
+// state control
 always @(posedge clk) begin
     // if (display_div_sig == 1'b1) begin
         if (rst == 1'b1) begin
