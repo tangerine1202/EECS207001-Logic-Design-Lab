@@ -40,17 +40,21 @@ reg press_F;
 wire second_div_sig;
 wire display_div_sig;
 
+reg state;
 wire [7:0] coins;
+
 
 // Divide Clock
 Clock_Divider #(.DIV_TIME(32'd100_000_000)) clk_div_second  (
    .div_sig(second_div_sig),
    .rst(rst_op),
+   .state(state),
    .clk(clk)
 );
 Clock_Divider #(.DIV_TIME(32'd100_000)) clk_div_general  (
    .div_sig(display_div_sig),
    .rst(rst_op),
+   .state(state),
    .clk(clk)
 );
 
@@ -101,11 +105,12 @@ Vending_Machine vending_machine (
     .press_S(press_S),
     .press_D(press_D),
     .press_F(press_F),
+    .state(state),
     .affordable_drinks(affordable_drinks),
     .coins(coins)
 );
 
-Display_Money display_money (
+Display_Coins display_coins (
     .an(an),
     .seg(seg),
     .coins(coins),
@@ -157,6 +162,7 @@ module Vending_Machine (
     input press_S,
     input press_D,
     input press_F,
+    output state,
     output [3:0] affordable_drinks,
     output reg [7:0] coins
 );
@@ -291,7 +297,7 @@ end
 
 endmodule
 
-module Display_Money (
+module Display_Coins (
     output [4-1:0] an,
     output reg [8-1:0] seg,
     input [8-1:0] coins,
@@ -371,14 +377,16 @@ endmodule
 module Clock_Divider(
     output reg div_sig,
     input rst,
-    input clk
+    input clk,
+    input state
 );
 
 parameter DIV_TIME = 32'd100_000;
 reg [32-1:0] cnt;
 
 always @(posedge clk) begin
-    if (rst == 1'b1) begin
+    // FIXME: 'state' please refer to 'RETURN_STATE' in Vending_Machine module
+    if (rst == 1'b1 || state == 1'b1) begin
         cnt <= 32'd0;
     end
     else begin
