@@ -130,7 +130,7 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 	parameter UPWARD = 1'b0;
 	parameter DOWNWARD = 1'b1;
 	reg direction;
-	wire next_direction;
+	reg next_direction;
 
 	reg  [9:0] A_state, B_state, C_state;
 	wire [9:0] next_A_state, next_B_state, next_C_state;
@@ -145,9 +145,10 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 	reg [9:0] A_to, B_to, C_to;
 
 	assign start = (up || down);
-	always @(posedge clk) begin
+
+	always @(*) begin
 		if (rst) next_direction = UPWARD;
-		if (counter == 10'd0 || counter >= 10'd1000) begin
+		else if (counter == 10'd0 || counter >= 10'd1000) begin
 			if (up)	next_direction = UPWARD;
 			else if (down) next_direction = DOWNWARD;
 			else next_direction = direction;
@@ -155,13 +156,23 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 		else next_direction = direction;
 	end
 
+	always @(posedge clk) begin
+		if (rst) 
+			counter <= 10'd0;
+		// else if (counter == 10'd0 || counter >= 10'd1000)
+			// if (up || down)	
+				// counter <= 10'd0;
+			// else 
+				// counter <= next_counter;
+		else
+				counter <= next_counter;
+	end
 
 	always@(posedge clk)begin
 		if(rst)begin
 			A_state <= `STOP;
 			B_state <= `STOP;
 			C_state <= `STOP;
-			counter <= 10'd0;
 			A_v_count <= 10'd0;
 			B_v_count <= 10'd0;
 			C_v_count <= 10'd0;
@@ -171,7 +182,6 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 			A_state <= next_A_state;
 			B_state <= next_B_state;
 			C_state <= next_C_state;
-			counter <= next_counter;
 			A_v_count <= (direction == UPWARD) ? next_up_A_v_count: next_down_A_v_count;
 			B_v_count <= (direction == UPWARD) ? next_up_B_v_count: next_down_B_v_count;
 			C_v_count <= (direction == UPWARD) ? next_up_C_v_count: next_down_C_v_count;
@@ -185,12 +195,12 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 				C_to = (start==1'b1 && counter==10'd0)? `SLOW : `STOP;
 			end
 			`SLOW:begin
-				// C_to = (counter>=10'd959)? `STOP : (counter>=10'd239 && counter<10'd359)? `MID : `SLOW;
-				C_to = (counter>=10'd239 && counter<10'd359)? `MID : (counter >= 10'd959) ? `FAST : `SLOW;
+				 C_to = (counter>=10'd959)? `STOP : (counter>=10'd239 && counter<10'd359)? `MID : `SLOW;
+//				C_to = (counter>=10'd239 && counter<10'd359)? `MID : (counter >= 10'd959) ? `FAST : `SLOW;
 			end
 			`MID:begin
-				// C_to = (counter>=10'd719)? `SLOW : (counter>=10'd359 && counter<10'd599)? `FAST : `MID;
-				C_to = (counter>=10'd359 && counter<10'd599)? `FAST : (counter>=10'd719) ? `SLOW : `MID;
+				 C_to = (counter>=10'd719)? `SLOW : (counter>=10'd359 && counter<10'd599)? `FAST : `MID;
+//				C_to = (counter>=10'd359 && counter<10'd599)? `FAST : (counter>=10'd719) ? `SLOW : `MID;
 			end
 			`FAST:begin
 				C_to = (counter>=10'd599)? `MID : `FAST;
@@ -203,12 +213,12 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 				B_to = (start==1'b1 && counter==10'd0)? `SLOW : `STOP;
 			end
 			`SLOW:begin
-				// B_to = (counter>=10'd799)? `STOP : (counter>=10'd239 && counter<10'd359)? `MID : `SLOW;
-				B_to = (counter>=10'd239 && counter<10'd359)? `MID : (counter>=10'd799)? `STOP : `SLOW;
+				 B_to = (counter>=10'd799)? `STOP : (counter>=10'd239 && counter<10'd359)? `MID : `SLOW;
+//				B_to = (counter>=10'd239 && counter<10'd359)? `MID : (counter>=10'd799)? `STOP : `SLOW;
 			end
 			`MID:begin
-				// B_to = (counter>=10'd559)? `SLOW : (counter>=10'd359 && counter<10'd439)? `FAST : `MID;
-				B_to = (counter>=10'd359 && counter<10'd439)? `FAST : (counter>=10'd559)? `SLOW : `MID;
+				 B_to = (counter>=10'd559)? `SLOW : (counter>=10'd359 && counter<10'd439)? `FAST : `MID;
+//				B_to = (counter>=10'd359 && counter<10'd439)? `FAST : (counter>=10'd559)? `SLOW : `MID;
 			end
 			`FAST:begin
 				B_to = (counter>=10'd439)? `MID : `FAST;
@@ -221,8 +231,8 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 				A_to = (start==1'b1 && counter==10'd0)? `SLOW : `STOP;
 			end
 			`SLOW:begin
-				// A_to = (counter>=10'd599)? `STOP : (counter>=10'd239 && counter<10'd359)? `MID : `SLOW;
-				A_to = (counter>=10'd239 && counter<10'd359)? `MID :  (counter>=10'd599)? `STOP : `SLOW;
+				 A_to = (counter>=10'd599)? `STOP : (counter>=10'd239 && counter<10'd359)? `MID : `SLOW;
+//				A_to = (counter>=10'd239 && counter<10'd359)? `MID :  (counter>=10'd599)? `STOP : `SLOW;
 			end
 			`MID:begin
 				A_to = (counter>=10'd359)? `SLOW : `MID;
@@ -238,13 +248,13 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 	assign next_B_state = B_to;
 	assign next_A_state = A_to;
 
-	assign next_up_A_v_count = (A_v_count + A_state >= 10'd240)? A_v_count + A_state - 10'd240: A_v_count + A_state;
-	assign next_up_B_v_count = (B_v_count + B_state >= 10'd240)? B_v_count + B_state - 10'd240: B_v_count + B_state;
-	assign next_up_C_v_count = (C_v_count + C_state >= 10'd240)? C_v_count + C_state - 10'd240: C_v_count + C_state;
+	assign next_down_A_v_count = (A_v_count + A_state >= 10'd240)? A_v_count + A_state - 10'd240: A_v_count + A_state;
+	assign next_down_B_v_count = (B_v_count + B_state >= 10'd240)? B_v_count + B_state - 10'd240: B_v_count + B_state;
+	assign next_down_C_v_count = (C_v_count + C_state >= 10'd240)? C_v_count + C_state - 10'd240: C_v_count + C_state;
 
-	assign next_down_A_v_count = (A_v_count < A_state)? 10'd240 + A_v_count - A_state: A_v_count - A_state;
-	assign next_down_B_v_count = (B_v_count < B_state)? 10'd240 + B_v_count - B_state: B_v_count - B_state;
-	assign next_down_C_v_count = (C_v_count < C_state)? 10'd240 + C_v_count - C_state: C_v_count - C_state;
+	assign next_up_A_v_count = (A_v_count < A_state)? 10'd240 + A_v_count - A_state: A_v_count - A_state;
+	assign next_up_B_v_count = (B_v_count < B_state)? 10'd240 + B_v_count - B_state: B_v_count - B_state;
+	assign next_up_C_v_count = (C_v_count < C_state)? 10'd240 + C_v_count - C_state: C_v_count - C_state;
 
 endmodule
 
