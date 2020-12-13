@@ -13,7 +13,7 @@
 // request       :request signal from button press by user.
 // ack           :ack sent by slave.
 // data_in       :data input from user.
-// notice        :signal indicating the recieve of ack from slave, will be asserted for 1 sec.
+// notice        :signal indicating the receive of ack from slave, will be asserted for 1 sec.
 // data          :data output to slave.
 // valid         :signal sent to slave indicating the current data is valid and is ready to be sampled.
 // request2s     :request signal output to slave, notifying slave there's data to send.
