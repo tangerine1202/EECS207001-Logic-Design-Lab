@@ -36,13 +36,13 @@ endmodule
 module top(clk, rst_n, in, request, notice_master, data_to_slave_o, valid, request2s, ack, seven_seg, AN);
     input clk;
     input rst_n;
-    input [8-1:0] in;
-    input request;
-    input ack;
-    output [3-1:0] data_to_slave_o;
-    output notice_master;
-    output valid;
-    output request2s;
+    input [8-1:0] in;  // one-hot input number
+    input request;     // send button
+    input ack;         // ack from slave
+    output [3-1:0] data_to_slave_o;  // encode number
+    output notice_master;  // LED[0]
+    output valid;          // data is ready
+    output request2s;      // request signal to slave 
     output [7-1:0] seven_seg;
     output [4-1:0] AN;
     wire db_request;
