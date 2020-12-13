@@ -10,8 +10,8 @@ reg in = 1'b0;
 wire dec1;
 wire dec2;
 
-reg [3-1:0] chk1_in = 3'b000;
-reg [4-1:0] chk2_in = 3'b000;
+reg [4-1:0] chk1_in = 4'b000;
+reg [4-1:0] chk2_in = 4'b000;
 reg chk1_stop = 1'b0;
 
 reg [8-1:0] iter = 8'b0; // iter for tb
@@ -35,9 +35,9 @@ initial begin
 
     reset;
     
-    dec1_ts;
-    #(`CYC*2) reset;
-    dec2_ts;
+    dec_ts;
+
+    random_ts;
 
     $finish;
 end
@@ -45,7 +45,7 @@ end
 // check in state
 always @(posedge clk) begin
     // Dec1 check
-    chk1_in[2:1] <= chk1_in[1:0];
+    chk1_in[3:1] <= chk1_in[2:0];
     chk1_in[0]   <= in;
     // Dec2 check
     chk2_in[3:1] = chk2_in[2:0];
@@ -54,7 +54,7 @@ end
 
 // check dec 1
 always @(*) begin
-    if (chk1_in == 3'b111) begin
+    if (chk1_in == 4'b1111) begin
         chk1_stop = 1'b1;
     end
     else begin 
@@ -62,7 +62,7 @@ always @(*) begin
     end
 
     if (chk1_stop == 1'b0) begin
-        if (chk1_in == 3'b101) begin
+        if (chk1_in[2:0] == 3'b101) begin
             check_1(1'b1);
         end
         else begin
@@ -84,26 +84,20 @@ always @(*) begin
     end
 end
 
-// testcase for dec1
-task dec1_ts;
-reg [4-1:0] i;
+
+task random_ts;
 begin
-    repeat (2**6) begin
-        iter = iter + 8'b0000_0001;
-        for(i = 4'd0; i < 4'd6; i = i+4'd1) begin
-            if (iter[i] == 1'b0)
-                Zero;
-            else
-                One;
-            #(`CYC*2) reset;  // delay 2 clk to avoid concatenate situation and reset chk1_stop
-        end
+    repeat (10000) begin
+        @(negedge clk) in = ^$urandom();
+        if(iter % 24 == 8'b0)
+            reset;
+        iter = iter + 8'd1;
     end
-    iter = 8'b0000_0000;
 end
 endtask
 
-// testcase for dec2
-task dec2_ts;
+// testcase for all condition of two 4-bit
+task dec_ts;
 reg [4-1:0] i;
 begin
     repeat (2**8) begin
@@ -113,8 +107,8 @@ begin
                 Zero;
             else
                 One;
-            #(`CYC*2) reset;  // delay 2 clk and reset to avoid concatenate situation and chk1 error
         end
+        #(`CYC*2) reset;  // delay 2 clk to avoid concatenate situation and reset chk1_stop
     end
     iter = 8'b0000_0000;
 end
@@ -192,6 +186,8 @@ begin
     @(negedge clk) rst_n = 1'b0;
     in = 1'b0;
     chk1_stop = 1'b0;
+    chk1_in = 4'b0000;
+    chk2_in = 4'b0000;
     @(negedge clk) rst_n = 1'b1;
 end
 endtask
