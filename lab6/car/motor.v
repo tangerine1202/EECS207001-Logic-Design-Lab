@@ -5,7 +5,7 @@ module motor(
   output [1:0] pwm  // {left, right}
 );
 
-  parameter NORMAL_FORWARD = 10'd256;
+  parameter NORMAL_FORWARD = 10'd512;
 
   reg [9:0]next_left_duty, next_right_duty;
   reg [9:0]left_duty, right_duty;

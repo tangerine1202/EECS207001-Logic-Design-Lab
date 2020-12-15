@@ -14,25 +14,31 @@ module Top(
   output left_speed,
   output reg [1:0] left,
   output right_speed,
-  output reg [1:0] right
+  output reg [1:0] right,
+  // debug
+  output reg LED_rst,
+  output reg [1:0] LED_left,
+  output reg [1:0] LED_right,
+  output reg LED_left_speed,
+  output reg LED_right_speed,
+  output wire stop
 );
 
-  wire Rst_n, rst_pb;
-  wire stop;
+  wire rst_op, rst_pb;
   wire [2:0] sensor_state;
   debounce d0(rst_pb, rst, clk);
-  onepulse d1(rst_pb, clk, Rst_n);
+  onepulse d1(rst_pb, clk, rst_op);
 
   motor A(
     .clk(clk),
-    .rst(rst),
+    .rst(rst_op),
     // .mode(),
     .pwm({left_speed, right_speed})
   );
 
   sonic_top B(
     .clk(clk),
-    .rst(rst),
+    .rst(rst_op),
     .Echo(echo),
     .Trig(trig),
     .stop(stop)
@@ -40,7 +46,7 @@ module Top(
 
   tracker_sensor C(
     .clk(clk),
-    .reset(rst),
+    .reset(rst_op),
     .left_signal(left_signal),
     .right_signal(right_signal),
     .mid_signal(mid_signal),
@@ -49,11 +55,19 @@ module Top(
 
   always @(*) begin
     // TODO: Use left and right to set your pwm
-    if (stop)
-      {left, right} = {`MOTOR_STOP, `MOTOR_STOP};
-    else
+    // if (stop)
+      // {left, right} = {`MOTOR_STOP, `MOTOR_STOP};
+    // else
+    if (rst_op == 1'b1)
       {left, right} = {`MOTOR_FORWARD, `MOTOR_FORWARD};
   end
+
+  // debug
+  assign LED_rst = rst_op;
+  assign LED_left = left;
+  assign LED_right = right;
+  assign LED_left_speed = left_speed;
+  assign LED_right_speed = right_speed;
 
 endmodule
 
