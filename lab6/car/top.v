@@ -129,7 +129,7 @@ parameter DIV = 32'd100_000;
 input clk;
 input [19:0] num;
 output reg [6:0] seg; // cg~ca
-output reg [3:0] an;
+output [3:0] an;
 
 reg [3:0] digit;
 reg [1:0] an_idx;
