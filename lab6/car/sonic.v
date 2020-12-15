@@ -1,6 +1,9 @@
 `timescale 1ns/1ps
 
 module sonic_top(clk, rst, Echo, Trig, stop);
+  // [TO-DO] calculate the right distance to trig stop(triggered when the distance is lower than 40 cm)
+  // Hint: using "dis"
+
 	input clk, rst, Echo;
 	output Trig, stop;
 
@@ -13,9 +16,7 @@ module sonic_top(clk, rst, Echo, Trig, stop);
 	TrigSignal u1(.clk(clk), .rst(rst), .trig(Trig));
 	PosCounter u2(.clk(clk1M), .rst(rst), .echo(Echo), .distance_count(dis));
 
-  // [TO-DO] calculate the right distance to trig stop(triggered when the distance is lower than 40 cm)
-  // Hint: using "dis"
-  assign stop = (dis < 20'd40) ? 1'b0 : 1'b1;
+  assign stop = (dis < 20'd40) ? 1'b1 : 1'b0;
 
   // TODO: may use 7-segment display to show the distance
 

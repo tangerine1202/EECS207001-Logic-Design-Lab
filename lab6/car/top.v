@@ -16,11 +16,11 @@ module Top(
   output right_speed,
   output reg [1:0] right,
   // debug
-  output reg LED_rst,
-  output reg [1:0] LED_left,
-  output reg [1:0] LED_right,
-  output reg LED_left_speed,
-  output reg LED_right_speed,
+  output LED_rst,
+  output [1:0] LED_left,
+  output [1:0] LED_right,
+  output LED_left_speed,
+  output LED_right_speed,
   output wire stop
 );
 
@@ -63,7 +63,7 @@ module Top(
   end
 
   // debug
-  assign LED_rst = rst_op;
+  assign LED_rst = rst;
   assign LED_left = left;
   assign LED_right = right;
   assign LED_left_speed = left_speed;
