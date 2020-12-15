@@ -17,6 +17,8 @@ module sonic_top(clk, rst, Echo, Trig, stop);
   // Hint: using "dis"
   assign stop = (dis < 20'd40) ? 1'b0 : 1'b1;
 
+  // TODO: may use 7-segment display to show the distance
+
 endmodule
 
 module PosCounter(clk, rst, echo, distance_count);
