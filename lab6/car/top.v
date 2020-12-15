@@ -18,6 +18,8 @@ module Top(
 );
 
   wire Rst_n, rst_pb;
+  wire stop;
+  wire [2:0] sensor_state;
   debounce d0(rst_pb, rst, clk);
   onepulse d1(rst_pb, clk, Rst_n);
 

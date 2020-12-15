@@ -67,9 +67,9 @@ module PosCounter(clk, rst, echo, distance_count);
   always @(*) begin
     case (curr_state)
       // FIXME: TA use blocking assign in Combinational Circuit?
-      // S0: next_state <= S1;
-      // S1: next_state <= S2;
-      // S2: next_state <= S0;
+//       S0: next_state <= S1;
+//       S1: next_state <= S2;
+//       S2: next_state <= S0;
       S0: next_state = S1;
       S1: next_state = S2;
       S2: next_state = S0;
