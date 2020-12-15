@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module Top(
   input clk,
   input rst,
@@ -17,26 +19,26 @@ module Top(
   onepulse d1(rst_pb, clk, Rst_n);
 
   motor A(
-    .clk(),
-    .rst(),
+    .clk(clk),
+    .rst(rst),
     //.mode(),
     .pwm()
   );
 
   sonic_top B(
-    .clk(),
-    .rst(),
-    .Echo(),
-    .Trig(),
+    .clk(clk),
+    .rst(rst),
+    .Echo(echo),
+    .Trig(trig),
     .stop()
   );
 
   tracker_sensor C(
-    .clk(),
-    .reset(),
-    .left_signal(),
-    .right_signal(),
-    .mid_signal(),
+    .clk(clk),
+    .reset(rst),
+    .left_signal(left_signal),
+    .right_signal(right_signal),
+    .mid_signal(mid_signal),
     //.state()
    );
 

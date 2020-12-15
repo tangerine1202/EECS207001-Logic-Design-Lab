@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module sonic_top(clk, rst, Echo, Trig, stop);
 	input clk, rst, Echo;
 	output Trig, stop;
@@ -13,6 +15,7 @@ module sonic_top(clk, rst, Echo, Trig, stop);
 
   // [TO-DO] calculate the right distance to trig stop(triggered when the distance is lower than 40 cm)
   // Hint: using "dis"
+  assign stop = (dis < 20'd40) ? 1'b0 : 1'b1;
 
 endmodule
 
@@ -71,7 +74,15 @@ module PosCounter(clk, rst, echo, distance_count);
     endcase
   end
 
-  // FIXME: Which unit is used for distance?
+  /* distance_count (cm)
+    c = 331.5 + 0.607 * t (m/s)
+    If temperature = 20 (C degree):
+      c = 0.034364 (cm/us)
+          -> 29.1  (us/cm)
+      distance_count = (traveled_time / 2) * (c * 100)  (cm)
+                     = (traveled_time / 2) * 100 / 29.1 (cm)
+                     = (traveled_time) * 100     / 58   (cm)
+  */
   assign distance_count = distance_register  * 100 / 58;
   assign start = echo_reg1 & ~echo_reg2;
   assign finish = ~echo_reg1 & echo_reg2;
@@ -107,7 +118,7 @@ module TrigSignal(clk, rst, trig);
   end
 endmodule
 
-module div(clk ,out_clk);
+module div(clk, out_clk);
   input clk;
   output reg out_clk;
   // reg clkout;
