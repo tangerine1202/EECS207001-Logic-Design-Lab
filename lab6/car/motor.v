@@ -5,7 +5,7 @@ module motor(
   output [1:0] pwm  // {left, right}
 );
 
-  parameter NORMAL_FORWARD = 10'd512;
+  parameter NORMAL_FORWARD = 10'd1000;
 
   reg [9:0]next_left_duty, next_right_duty;
   reg [9:0]left_duty, right_duty;
@@ -31,20 +31,20 @@ module motor(
       left_duty <= 10'd0;
       right_duty <= 10'd0;
     end else begin
-      left_duty <= next_left_duty;
-      right_duty <= next_right_duty;
+      left_duty <= NORMAL_FORWARD;
+      right_duty <= NORMAL_FORWARD;
     end
   end
 
   // TODO: take the right speed for different situation
-  always @(*) begin
-    //case (mode)
-      //default: begin
-        next_left_duty = NORMAL_FORWARD;
-        next_right_duty = NORMAL_FORWARD;
-      //end
-    // endcase
-  end
+  // always @(*) begin
+    // // case (mode)
+      // //default: begin
+        // next_left_duty = NORMAL_FORWARD;
+        // next_right_duty = NORMAL_FORWARD;
+      // //end
+    // // endcase
+  // end
 
 endmodule
 

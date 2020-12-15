@@ -60,6 +60,8 @@ module Top(
     // else
     if (rst_op == 1'b1)
       {left, right} = {`MOTOR_FORWARD, `MOTOR_FORWARD};
+    else
+      {left, right} = {`MOTOR_FORWARD, `MOTOR_FORWARD};
   end
 
   // debug
