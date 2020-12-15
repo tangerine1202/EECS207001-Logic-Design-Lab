@@ -44,11 +44,11 @@ module slave_control(clk, rst_n, request, ack, data_in, notice, valid, data);
 
     always@(posedge clk) begin
         if (rst_n == 0) begin
-            state = state_wait_rqst;
-            notice = 0;
-            ack = 0;
-            data = 0;
-            start = 0;
+            state <= state_wait_rqst;
+            notice <= 0;
+            ack <= 0;
+            data <= 0;
+            start <= 0;
         end
         else begin
             state <= next_state;
