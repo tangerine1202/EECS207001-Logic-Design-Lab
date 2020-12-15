@@ -16,7 +16,7 @@ module sonic_top(clk, rst, Echo, Trig, stop, dis);
 	TrigSignal u1(.clk(clk), .rst(rst), .trig(Trig));
 	PosCounter u2(.clk(clk1M), .rst(rst), .echo(Echo), .distance_count(dis));
 
-  assign stop = (dis < 20'd40) ? 1'b1 : 1'b0;
+  assign stop = (dis < 20'd4000) ? 1'b1 : 1'b0;
 
   // TODO: may use 7-segment display to show the distance
 
@@ -80,11 +80,11 @@ module PosCounter(clk, rst, echo, distance_count);
   /* distance_count (cm)
     c = 331.5 + 0.607 * t (m/s)
     If temperature = 20 (C degree):
-      c = 0.034364 (cm/us)
-          -> 29.1  (us/cm)
-      distance_count = (traveled_time / 2) * (c * 100)  (cm)
-                     = (traveled_time / 2) * 100 / 29.1 (cm)
-                     = (traveled_time) * 100     / 58   (cm)
+      c = 0.034364 (us/cm)
+          -> 29.1  (cm/us)
+      distance_count = (traveled_time(us) / 2) * (c)  (cm)
+                     = (traveled_time(us) / 2) / 29.1 (cm)
+                     = (traveled_time(us)) * 100 / 58   (00.00cm)
   */
   assign distance_count = distance_register  * 100 / 58;
   assign start = echo_reg1 & ~echo_reg2;
