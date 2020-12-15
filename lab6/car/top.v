@@ -158,13 +158,13 @@ assign an[0] = (an_idx == 2'd0) ? 1'b0 : 1'b1;
 
 always @(*) begin
   if (an_idx == 2'd0)
-    digit = num % 10;
+    digit = num % 20'd10;
   else if (an_idx == 2'd1)
-    digit = num / 10;
+    digit = num / 20'd10;
   else if (an_idx == 2'd2)
-    digit = num / 100;
+    digit = num / 20'd100;
   else if (an_idx == 2'd3)
-    digit = num / 1000;
+    digit = num / 20'd1000;
   else
     digit = 4'd0;
 end
@@ -181,12 +181,12 @@ always @(*) begin
     4'd7: begin seg = 7'b1111000; end
     4'd8: begin seg = 7'b0000000; end
     4'd9: begin seg = 7'b0010000; end
-    4'ha: begin seg = 7'b0001000; end
-    4'hb: begin seg = 7'b0000011; end
-    4'hc: begin seg = 7'b1000110; end
-    4'hd: begin seg = 7'b0100001; end
-    4'he: begin seg = 7'b0000110; end
-    4'hf: begin seg = 7'b0001110; end
+    // 4'ha: begin seg = 7'b0001000; end
+    // 4'hb: begin seg = 7'b0000011; end
+    // 4'hc: begin seg = 7'b1000110; end
+    // 4'hd: begin seg = 7'b0100001; end
+    // 4'he: begin seg = 7'b0000110; end
+    // 4'hf: begin seg = 7'b0001110; end
     default: begin seg = 7'b1111111; end
   endcase
 end
