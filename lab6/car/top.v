@@ -78,11 +78,11 @@ module Top(
         else if (sensor_signals == 3'b001 || sensor_signals == 3'b011)
             {left, right} = {`MOTOR_FORWARD, `MOTOR_STOP};
         else if (sensor_signals == 3'b111)
-          {left, right} = {`MOTOR_BACKWARD || `MOTOR_BACKWARD};
+          {left, right} = {`MOTOR_BACKWARD, `MOTOR_BACKWARD};
         else if (sensor_signals == 3'b000)
-          {left, right} = {`MOTOR_FORWARD || `MOTOR_FORWARD};
+          {left, right} = {`MOTOR_FORWARD, `MOTOR_FORWARD};
         else
-          {left, right} = {`MOTOR_FORWARD || `MOTOR_FORWARD};
+          {left, right} = {`MOTOR_FORWARD, `MOTOR_FORWARD};
   end
 
   // debug
