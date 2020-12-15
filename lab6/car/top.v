@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 `define MOTOR_STOP 2'b00
-`define MOTOR_FORWARD 2'b10
-`define MOTOR_BACKWARD 2'b01
+`define MOTOR_FORWARD 2'b01   // [1]: backward, [0]: forward
+`define MOTOR_BACKWARD 2'b10
 
 module Top(
   input clk,
