@@ -1,24 +1,24 @@
 module motor(
   input clk,
   input rst,
-  input [1:0] mode,
+  input [2:0] mode,
   output [1:0] pwm  // {left, right}
 );
 
   // mode
-  parameter STOP = 2'b00;
-  parameter GO_STRAIGHT = 2'b01;
-  parameter TURN_LEFT = 2'b10;
-  parameter TURN_RIGHT = 2'b11;
+  parameter STOP = 3'd0;
+  parameter GO_FORWARD = 3'd1;
+  parameter TURN_LEFT = 3'd2;
+  parameter TURN_RIGHT = 3'd3;
+  parameter GO_BACKWARD = 3'd7;
 
   // duty
   parameter SPEED_STOP   = 10'd0;
   parameter SPEED_SLOW   = 10'd800;
-  parameter SPEED_NORMAL = 10'd1000;
   parameter SPEED_FAST   = 10'd1023;
 
-  reg [9:0]next_left_duty, next_right_duty;
-  reg [9:0]left_duty, right_duty;
+  reg [9:0] next_left_duty, next_right_duty;
+  reg [9:0] left_duty, right_duty;
   wire left_pwm, right_pwm;
 
   motor_pwm m0(
@@ -36,8 +36,8 @@ module motor(
 
   assign pwm = {left_pwm, right_pwm};
 
-  always@(posedge clk)begin
-    if(rst)begin
+  always @(posedge clk) begin
+    if (rst) begin
       left_duty <= 10'd0;
       right_duty <= 10'd0;
     end else begin
@@ -53,21 +53,25 @@ module motor(
           next_left_duty = SPEED_STOP;
           next_right_duty = SPEED_STOP;
         end
-        GO_STRAIGHT: begin
-          next_left_duty = SPEED_NORMAL;
-          next_right_duty = SPEED_NORMAL;
+        GO_FORWARD: begin
+          next_left_duty = SPEED_FAST;
+          next_right_duty = SPEED_FAST;
         end
         TURN_LEFT: begin
-          next_left_duty = SPEED_SLOW;
+          next_left_duty = SPEED_STOP;
           next_right_duty = SPEED_FAST;
         end
         TURN_RIGHT: begin
           next_left_duty = SPEED_FAST;
+          next_right_duty = SPEED_STOP;
+        end
+        GO_BACKWARD: begin
+          next_left_duty = SPEED_SLOW;
           next_right_duty = SPEED_SLOW;
         end
         default: begin
-         next_left_duty = SPEED_NORMAL;
-         next_right_duty = SPEED_NORMAL;
+         next_left_duty = SPEED_FAST;
+         next_right_duty = SPEED_FAST;
         end
       endcase
    end
