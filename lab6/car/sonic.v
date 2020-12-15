@@ -1,13 +1,13 @@
 `timescale 1ns/1ps
 
-module sonic_top(clk, rst, Echo, Trig, stop);
+module sonic_top(clk, rst, Echo, Trig, stop, dis);
   // [TO-DO] calculate the right distance to trig stop(triggered when the distance is lower than 40 cm)
   // Hint: using "dis"
 
 	input clk, rst, Echo;
 	output Trig, stop;
+	output [19:0] dis;
 
-	wire [19:0] dis;
 	wire [19:0] d;
   wire clk1M;
 	wire clk_2_17;
