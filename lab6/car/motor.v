@@ -1,31 +1,51 @@
 module motor(
   input clk,
   input rst,
-  // input [?? :0]mode,
-  output [1:0] pwm
+  // input [??:0] mode,
+  output [1:0] pwm  // {left, right}
 );
 
-  reg [9:0]next_left_motor, next_right_motor;
-  reg [9:0]left_motor, right_motor;
+  parameter NORMAL_FORWARD = 10'd256;
+
+  reg [9:0]next_left_duty, next_right_duty;
+  reg [9:0]left_duty, right_duty;
   wire left_pwm, right_pwm;
 
-  motor_pwm m0(clk, rst, left_motor, left_pwm);
-  motor_pwm m1(clk, rst, right_motor, right_pwm);
+  motor_pwm m0(
+    .clk(clk),
+    .reset(rst),
+    .duty(left_duty),
+    .pmod_1(left_pwm)
+  );
+  motor_pwm m1(
+    .clk(clk),
+    .reset(rst),
+    .duty(right_duty),
+    .pmod_1(right_pwm)
+  );
+
+  assign pwm = {left_pwm, right_pwm};
 
   always@(posedge clk)begin
     if(rst)begin
-      left_motor <= 10'd0;
-      right_motor <= 10'd0;
+      left_duty <= 10'd0;
+      right_duty <= 10'd0;
     end else begin
-      left_motor <= next_left_motor;
-      right_motor <= next_right_motor;
+      left_duty <= next_left_duty;
+      right_duty <= next_right_duty;
     end
   end
 
-  // [TO-DO] take the right speed for different situation
+  // TODO: take the right speed for different situation
+  always @(*) begin
+    //case (mode)
+      //default: begin
+        next_left_duty = NORMAL_FORWARD;
+        next_right_duty = NORMAL_FORWARD;
+      //end
+    // endcase
+  end
 
-
-  assign pwm = {left_pwm, right_pwm};
 endmodule
 
 module motor_pwm (
@@ -49,7 +69,7 @@ endmodule
 module PWM_gen (
   input wire clk,
   input wire reset,
-input [31:0] freq,
+  input [31:0] freq,
   input [9:0] duty,
   output reg PWM
 );
