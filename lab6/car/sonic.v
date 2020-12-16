@@ -80,8 +80,8 @@ module PosCounter(clk, rst, echo, distance_count);
   /* distance_count (cm)
     c = 331.5 + 0.607 * t (m/s)
     If temperature = 20 (C degree):
-      c = 0.034364 (us/cm)
-          -> 29.1  (cm/us)
+      c = 0.034364 (cm/us)
+          -> 29.1  (us/cm)
       distance_count = (traveled_time(us) / 2) * (c)  (cm)
                      = (traveled_time(us) / 2) / 29.1 (cm)
                      = (traveled_time(us)) * 100 / 58   (00.00cm)
