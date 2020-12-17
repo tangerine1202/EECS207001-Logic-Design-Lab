@@ -40,7 +40,7 @@ module Top(
   motor A(
     .clk(clk),
     .rst(rst_op),
-    .mode(2'b01),  // go straight
+    .mode(3'b01),  // go straight
     .pwm({left_speed, right_speed})
   );
 
@@ -62,7 +62,7 @@ module Top(
     .state(sensor_signals)
    );
 
-  // mode state 
+  // mode state
   // FIXME: make sure it's this same as mode in 'motor.v'
   parameter MODE_SIZE = 3;
   parameter STOP = 3'd0;
@@ -80,29 +80,29 @@ module Top(
     else
       if (stop == 1'b1)
         {left, right} = {`MOTOR_STOP, `MOTOR_STOP};
-      else 
+      else
         if (mode == GO_BACKWARD)
           {left, right} = {`MOTOR_BACKWARD, `MOTOR_BACKWARD};
-        else if (mode == TURN_LEFT) 
+        else if (mode == TURN_LEFT)
           {left, right} = {`MOTOR_STOP, `MOTOR_FORWARD};
-        else if (mode == TURN_RIGHT) 
+        else if (mode == TURN_RIGHT)
           {left, right} = {`MOTOR_FORWARD, `MOTOR_STOP};
         else
           {left, right} = {`MOTOR_FORWARD, `MOTOR_FORWARD};
   end
-  
+
   always @(posedge clk) begin
     if (rst)
       mode <= STOP;
-    else 
+    else
       mode <= next_mode;
   end
-  
+
   always @(*) begin
     case (sensor_signals)
-      3'b111: 
+      3'b111:
         next_mode = GO_FORWARD;
-      3'b110, 
+      3'b110,
       3'b100:
         next_mode = TURN_LEFT;
       3'b011,
@@ -110,9 +110,9 @@ module Top(
         next_mode = TURN_RIGHT;
       3'b000:
         next_mode = GO_BACKWARD;
-      default: 
+      default:
         next_mode = GO_BACKWARD;
-    endcase   
+    endcase
   end
 
   // debug
