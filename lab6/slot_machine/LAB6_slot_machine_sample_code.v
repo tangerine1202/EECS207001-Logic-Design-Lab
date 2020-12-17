@@ -48,7 +48,7 @@ module Top(clk, rst, up_btn, down_btn, vgaRed, vgaBlue, vgaGreen, hsync, vsync);
 	//control
 	state_control SC0(
 		.clk(clk_d22),
-		.rst(rst),
+		.rst(rst_op),
 		.up(up_op),
 		.down(down_op),
 		.A_v_count(A_v_count),
@@ -75,7 +75,7 @@ module Top(clk, rst, up_btn, down_btn, vgaRed, vgaBlue, vgaGreen, hsync, vsync);
 
 	vga_controller VC0(
 		.pclk(clk_d2),
-		.reset(rst),
+		.reset(rst_op),
 		.hsync(hsync),
 		.vsync(vsync),
 		.valid(valid),
@@ -157,12 +157,12 @@ module state_control(clk, rst, up, down, A_v_count, B_v_count, C_v_count);
 	end
 
 	always @(posedge clk) begin
-		if (rst) 
+		if (rst)
 			counter <= 10'd0;
 		// else if (counter == 10'd0 || counter >= 10'd1000)
-			// if (up || down)	
+			// if (up || down)
 				// counter <= 10'd0;
-			// else 
+			// else
 				// counter <= next_counter;
 		else
 				counter <= next_counter;
