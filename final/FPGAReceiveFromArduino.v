@@ -7,7 +7,7 @@ module Receive_From_Arduino (
 
 //parameter CLK_FREQ  = 32'd100_000_000;
 //parameter UART_BAUD = 32'115200;
-parameter CLKS_PER_BIT = 10417;  // CLK_FREQ/UART_BAUD
+parameter CLKS_PER_BIT = 32'd868;  // CLK_FREQ/UART_BAUD
 
 
 reg [7:0] data;

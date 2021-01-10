@@ -6,8 +6,8 @@ int LED = 13;
 void setup()
 {
 //  pinMode(LED, OUTPUT);
-  Serial.begin(9600);   //設定硬體串列埠速率
-  mySerial.begin(9600); //設定軟體串列埠速率
+  Serial.begin(115200);   //設定硬體串列埠速率
+  mySerial.begin(115200); //設定軟體串列埠速率
 }
 
 void loop()
