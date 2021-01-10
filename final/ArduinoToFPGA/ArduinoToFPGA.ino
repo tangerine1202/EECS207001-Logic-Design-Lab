@@ -18,7 +18,6 @@ void loop()
     Serial.println(num);
     int ret = mySerial.write(num); //讀取PC傳送之字元,從軟體串列埠TX送給右方板
     Serial.println(ret);
-//    while (mySerial.available())
 //    {
 //      //led_blink();
 //      //led_blink();
