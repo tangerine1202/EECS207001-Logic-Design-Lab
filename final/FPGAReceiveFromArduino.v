@@ -10,35 +10,42 @@ module Receive_From_Arduino (
 parameter CLKS_PER_BIT = 32'd868;  // CLK_FREQ/UART_BAUD
 
 
-reg [7:0] data;
+reg [15:0] data;
 wire rx_ready;
 wire [7:0] rx_byte;
+reg high_bits;
 
 
 always @(posedge clk) begin
-  if (rst == 1'b1)
-    data[7:0] <= 8'b0000_0000;
+  if (rst == 1'b1) begin
+    data[15:0] <= 16'b0000_0000_0000_0000;
+    high_bits <= 1'b1;
+  end
   else begin
-    if (rx_ready == 1'b1)
-      data[7:0] <= rx_byte[7:0];
-    else
-      data[7:0] <= data[7:0];
+    if (high_bits == 1'b1) begin
+      if (rx_ready == 1'b1) begin
+        data[15:8] <= rx_byte[7:0];
+        high_bits <= 1'b0;
+      end
+      else begin
+        data[15:0] <= data[15:0];
+      end
+    end
+    else begin
+      if (rx_ready == 1'b1)
+        data[7:0] <= rx_byte[7:0];
+      else
+        data[15:0] <= data[15:0];
+    end
   end
 end
 
-assign led[7:0] = data[7:0];
+assign led[15:0] = data[15:0];
 
 
 // Checked: Serial will transmit 0 and 1 
 // FIXME: rx_ready never raise to 1
 // test SerialFromArduino port
-
-assign led[8] = (uart_state == 3'd0) ? 1'b1 : 1'b0;
-assign led[9] = (uart_state == 3'd1) ? 1'b1 : 1'b0;
-assign led[10] = (uart_state == 3'd2) ? 1'b1 : 1'b0;
-assign led[11] = (uart_state == 3'd3) ? 1'b1 : 1'b0;
-assign led[12] = (uart_state == 3'd4) ? 1'b1 : 1'b0;
-assign led[15] = SerialFromArduino;
 
 
 uart_rx #(.CLKS_PER_BIT(CLKS_PER_BIT)) rx_from_uart (
