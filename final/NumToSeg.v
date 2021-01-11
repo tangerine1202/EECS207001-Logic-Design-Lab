@@ -1,5 +1,10 @@
 
-module NumToSeg (clk, num, seg, an);
+module NumToSeg (
+  input clk,
+  input [SIZE-1:0] num,
+  output reg [6:0] seg,
+  output [3:0] an
+);
 
 parameter SIZE = 16;
 parameter DIV = 32'd100_000;
