@@ -2,13 +2,15 @@ module Receive_From_Arduino (
   input clk,
   input rst,
   input serialFromArduino,
-  output reg [15:0] data,
-  output isDataReady;
+  // output reg [15:0] data,
+  // output isDataReady,
   // debug
   output [15:0] led,
   output [3:0] an,
   output [6:0] seg
 );
+  reg [15:0] data;
+  wire isDataReady;
 
 //parameter CLK_FREQ  = 32'd100_000_000;
 //parameter UART_BAUD = 32'115200;
@@ -21,16 +23,18 @@ parameter DATA_READY = 2'd3;
 
 wire rxReady;
 wire [7:0] rxByte;
+reg [15:0] nextData;
 reg [1:0] state;
 reg [1:0] nextState;
 
 always @(posedge clk) begin
   if (rst == 1'b1) begin
-    data = 16'd0;
+    data <= 16'd0;
     state <= RX_MSB;
   end
   else begin
-    state <= next_state;
+    data <= nextData;
+    state <= nextState;
   end
 end
 
@@ -38,34 +42,35 @@ always @(*) begin
   case (state)
     RX_MSB: begin
       if (rxReady == 1'b1) begin
-        data[15:8] = rxByte[7:0];
-        data[7:0] = data[7:0];
+        nextData[15:8] = rxByte[7:0];
+        nextData[7:0] = data[7:0];
         nextState = RX_LSB;
       end
       else begin
-        data = data;
+        nextData = data;
         nextState = RX_MSB;
       end
     end
     RX_LSB: begin
       if (rxReady == 1'b1) begin
-        data[15:8] = data[15:8];
-        data[7:0] = rxByte[7:0];
+        nextData[15:8] = data[15:8];
+        nextData[7:0] = rxByte[7:0];
         nextState = DATA_READY;
       end
       else begin
-        data = data;
+        nextData = data;
         nextState = RX_LSB;
       end
     end
     DATA_READY: begin
-      data = data;
+      nextData = data;
       nextState = RX_MSB;
     end
     default: begin
-      data = data;
+      nextData = data;
       nextState = RX_MSB;
     end
+  endcase
 end
 
 assign isDataReady = (state == DATA_READY) ? 1'b1 : 1'b0;

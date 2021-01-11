@@ -15,7 +15,7 @@ void loop()
 {
   while (Serial.available())
   {
-    double rx_angle = -123.45; // angle read from gy521
+    double rx_angle = random(0, 360); // angle read from gy521
 
     Serial.read();
     int angle = round(rx_angle);
@@ -27,18 +27,15 @@ void loop()
     Serial.print("Transmit: ");
     Serial.println(angle);
     Serial.print("High: ");
-    Serial.println(tx_angle_high);
+    Serial.println(tx_angle_high, BIN);
     Serial.print("Low: ");
-    Serial.println(tx_angle_low);
+    Serial.println(tx_angle_low, BIN);
     int ret = mySerial.write(tx_angle_high); //讀取PC傳送之字元,從軟體串列埠TX送給右方板
     Serial.println(ret);
     int ret2 = mySerial.write(tx_angle_low);
     Serial.println(ret2);
-    //    {
-    //      //led_blink();
-    //      //led_blink();
-    //      Serial.println(mySerial.read()); //左方板向PC傳送字串
-    //    }
+    // blink LED and sleep for 1.5 sec
+    led_blink();
   }
 }
 
