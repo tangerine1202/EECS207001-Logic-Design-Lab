@@ -11,7 +11,7 @@ module Motor #(
   input rst,
   input [SIZE-1:0] absOfPower,
   input isPowerPositive,
-  output [1:0] direction,       
+  output [1:0] direction,
   output [1:0] pwm,              // {left, right}
   // debug
   output [9:0] debug_duty
@@ -57,12 +57,10 @@ module Motor #(
   end
 
   always @(*) begin
-    // FIXME: 'motorPower' range? -> crop
     // 'duty' range -> 0~1023
     if (absOfPower > 16'd1023)
       next_duty = 10'd1023;
     else
-      // FIXME: check is LSB start at right hand side
       next_duty = absOfPower[9:0];
   end
 

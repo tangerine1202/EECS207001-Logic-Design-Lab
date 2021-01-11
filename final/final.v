@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module top (
   input clk,
   input rst,                          // Reset
@@ -46,12 +44,12 @@ parameter TARGET_ANGLE = 16'd180;
 
 // reg [SIZE-1:0] gyroAngle,     // Angle measured by gyroscope
 // reg [SIZE-1:0] acceAngle,     // Angle measured by accelerometer
-wire [SIZE-1:0] currAngle;         // Current Angle (have been filtered)
-wire currAngleReady;                    // 'currAngle' is ready to be received
-wire [SIZE-1:0] motorPower;              // Output of PID controller
-wire [SIZE-1:0] absOfPower;              // Absolute value of 'motorPower'
-wire isPowerPositive;                    // Is 'motorPower' positive
-wire [1:0] direction;                    // Motor move direction
+wire [SIZE-1:0] currAngle;       // Current Angle (have been filtered)
+wire currAngleReady;             // 'currAngle' is ready to be received
+wire [SIZE-1:0] motorPower;      // Output of PID controller
+wire [SIZE-1:0] absOfPower;      // Absolute value of 'motorPower'
+wire isPowerPositive;            // Is 'motorPower' positive
+wire [1:0] direction;            // Motor move direction
 
 
 // Receive angle from Arduino
@@ -64,6 +62,7 @@ Receive_From_Arduino rx_from_arduino (
 );
 
 // TODO: skip filter for test
+// FIXME: filter angle in Arduino
 // ComplementaryFilter #(.SIZE(SIZE)) complementary_filter (
   // .gyroAngle(gyroAngle),
   // .acceAngle(acceAngle),
