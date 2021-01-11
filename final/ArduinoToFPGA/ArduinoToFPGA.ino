@@ -59,15 +59,16 @@ void loop()
     Serial.println(ret);
     int ret2 = mySerial.write(tx_angle_low);
     Serial.println(ret2);
-//    // blink LED and sleep for 1.5 sec
-//    led_blink();
+
+    // TODO: use ISR to sample angle every # milliseconds
+    delay(150);
 //  }
 }
 
 void led_blink()
 {
   digitalWrite(LED, HIGH);
-  delay(1000);
+  delay(500);
   digitalWrite(LED, LOW);
   delay(500);
 }
