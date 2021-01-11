@@ -6,7 +6,7 @@ int LED = 13;
 
 void setup()
 {
-//  pinMode(LED, OUTPUT);
+  //  pinMode(LED, OUTPUT);
   Serial.begin(115200);   //設定硬體串列埠速率
   mySerial.begin(115200); //設定軟體串列埠速率
 }
@@ -15,16 +15,17 @@ void loop()
 {
   while (Serial.available())
   {
+    double rx_angle = -123.45; // angle read from gy521
+
     Serial.read();
-    double rx_angle = -123.45;
-    if(rx_angle < 0.0)
-      rx_angle = -rx_angle;
-    int dec_angle = (int)(rx_angle*100);
-    word word_angle = (word)dec_angle;
+    int angle = round(rx_angle);
+    if (angle < 0)
+      angle = -angle;
+    word word_angle = (word)angle;
     byte tx_angle_high = highByte(word_angle);
-    byte tx_angle_low  = lowByte(word_angle);
+    byte tx_angle_low = lowByte(word_angle);
     Serial.print("Transmit: ");
-    Serial.println(dec_angle);
+    Serial.println(angle);
     Serial.print("High: ");
     Serial.println(tx_angle_high);
     Serial.print("Low: ");
@@ -33,11 +34,11 @@ void loop()
     Serial.println(ret);
     int ret2 = mySerial.write(tx_angle_low);
     Serial.println(ret2);
-//    {
-//      //led_blink();
-//      //led_blink();
-//      Serial.println(mySerial.read()); //左方板向PC傳送字串
-//    }
+    //    {
+    //      //led_blink();
+    //      //led_blink();
+    //      Serial.println(mySerial.read()); //左方板向PC傳送字串
+    //    }
   }
 }
 
