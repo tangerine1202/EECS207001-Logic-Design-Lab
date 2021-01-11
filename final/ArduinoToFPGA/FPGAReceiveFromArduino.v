@@ -2,15 +2,16 @@ module Receive_From_Arduino (
   input clk,
   input rst,
   input serialFromArduino,
-  // output reg [15:0] data,
-  // output isDataReady,
-  // debug
-  output [15:0] led,
-  output [3:0] an,
-  output [6:0] seg
+  output reg [15:0] data,
+  output isDataReady,
+  // DEBUG
+  // output [15:0] led,
+  // output [3:0] an,
+  // output [6:0] seg
 );
-  reg [15:0] data;
-  wire isDataReady;
+// DEBUG
+  // reg [15:0] data;
+  // wire isDataReady;
 
 //parameter CLK_FREQ  = 32'd100_000_000;
 //parameter UART_BAUD = 32'115200;
@@ -75,15 +76,14 @@ end
 
 assign isDataReady = (state == DATA_READY) ? 1'b1 : 1'b0;
 
-// debug
-assign led[15:0] = data[15:0];
-
-NumToSeg num2seg (
-  .clk(clk),
-  .num(data),
-  .seg(seg),
-  .an(an)
-);
+// DEBUG
+// assign led[15:0] = data[15:0];
+// NumToSeg num2seg (
+  // .clk(clk),
+  // .num(data),
+  // .seg(seg),
+  // .an(an)
+// );
 
 uart_rx #(.CLKS_PER_BIT(CLKS_PER_BIT)) rx_from_uart (
   .i_Clock(clk),
