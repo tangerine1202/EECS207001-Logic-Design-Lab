@@ -3,7 +3,7 @@ module Receive_From_Arduino (
   input rst,
   input serialFromArduino,
   output reg [15:0] data,
-  output isDataReady,
+  output isDataReady
   // DEBUG
   // output [15:0] led,
   // output [3:0] an,
