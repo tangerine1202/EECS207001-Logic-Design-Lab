@@ -4,19 +4,24 @@
 `define MOTOR_FORWARD 2'b01   // [1]: backward, [0]: forward
 `define MOTOR_BACKWARD 2'b10
 
-module Motor(
+module Motor #(
+    parameter SIZE = 16
+) (
   input clk,
   input rst,
   input [SIZE-1:0] absOfPower,
   input isPowerPositive,
-  output [1:0] direction,       // {left, right}
-  output [1:0] pwm              // {left, right}
+  output [1:0] direction,       
+  output [1:0] pwm,              // {left, right}
+  // debug
+  output [9:0] debug_duty
 );
-  parameter SIZE = 16;
+  // debug
+  assign debug_duty = duty;
 
   reg [9:0] duty;
   reg [9:0] next_duty;
-  reg [9:0] left_duty, right_duty;
+  wire [9:0] left_duty, right_duty;
   // reg [9:0] next_left_duty, next_right_duty;
   wire left_pwm, right_pwm;
 
@@ -40,7 +45,7 @@ module Motor(
   assign right_duty = duty;
 
   always @(posedge clk) begin
-    if (rst) begin
+    if (rst == 1'b1) begin
       duty <= 10'd0;
       // left_duty <= 10'd0;
       // right_duty <= 10'd0;
@@ -55,10 +60,10 @@ module Motor(
     // FIXME: 'motorPower' range? -> crop
     // 'duty' range -> 0~1023
     if (absOfPower > 16'd1023)
-      duty = 10'd1023;
+      next_duty = 10'd1023;
     else
       // FIXME: check is LSB start at right hand side
-      duty = absOfPower[9:0];
+      next_duty = absOfPower[9:0];
   end
 
 endmodule

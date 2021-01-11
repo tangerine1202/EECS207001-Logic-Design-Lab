@@ -1,18 +1,13 @@
 
-module NumToSeg (
+module NumToSeg #(
+  parameter SIZE = 16,
+  parameter DIV = 32'd100_000  
+) (
   input clk,
   input [SIZE-1:0] num,
   output reg [6:0] seg,
   output [3:0] an
 );
-
-parameter SIZE = 16;
-parameter DIV = 32'd100_000;
-
-input clk;
-input [SIZE-1:0] num;
-output reg [6:0] seg; // cg~ca
-output [3:0] an;
 
 reg [3:0] digit;
 reg [1:0] an_idx;
@@ -70,7 +65,7 @@ always @(*) begin
     // 4'hd: begin seg = 7'b0100001; end
     // 4'he: begin seg = 7'b0000110; end
     // 4'hf: begin seg = 7'b0001110; end
-    default: begin seg = 7'b1111111; end
+    default: begin seg = 7'b0111111; end
   endcase
 end
 
