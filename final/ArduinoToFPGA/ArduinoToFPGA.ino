@@ -1,5 +1,15 @@
 #include <SoftwareSerial.h>
 #include <stdlib.h>
+#include "Wire.h"
+#include "I2Cdev.h"
+#include "MPU6050.h"
+#include "math.h"
+
+MPU6050 mpu;
+
+int16_t accY, accZ;
+float accAngle;
+
 
 SoftwareSerial mySerial(5, 6); //建立軟體串列埠腳位 (RX, TX)
 int LED = 13;
@@ -9,16 +19,31 @@ void setup()
   //  pinMode(LED, OUTPUT);
   Serial.begin(115200);   //設定硬體串列埠速率
   mySerial.begin(115200); //設定軟體串列埠速率
+  mpu.initialize();
 }
 
 void loop()
 {
-  while (Serial.available())
-  {
-    double rx_angle = random(0, 360); // angle read from gy521
+  accZ = mpu.getAccelerationZ();
+  accY = mpu.getAccelerationY();
+   
+  double accAngle = atan2(accY, accZ)*RAD_TO_DEG;
+  
+  if(isnan(accAngle))
+    Serial.println("angle is nan");
+  else
+    Serial.print("angle: ");
+    Serial.print(accAngle);
+    Serial.print("\n");
 
-    Serial.read();
-    int angle = round(rx_angle);
+
+//  while (Serial.available())
+//  {
+//    double rx_angle = random(0, 360); // angle read from gy521
+    double rx_angle = accAngle; // angle read from gy521
+
+//    Serial.read();
+    int angle = round(rx_angle)+180;
     if (angle < 0)
       angle = -angle;
     word word_angle = (word)angle;
@@ -34,9 +59,9 @@ void loop()
     Serial.println(ret);
     int ret2 = mySerial.write(tx_angle_low);
     Serial.println(ret2);
-    // blink LED and sleep for 1.5 sec
-    led_blink();
-  }
+//    // blink LED and sleep for 1.5 sec
+//    led_blink();
+//  }
 }
 
 void led_blink()
