@@ -43,11 +43,6 @@ end
 assign led[15:0] = data[15:0];
 
 
-// Checked: Serial will transmit 0 and 1 
-// FIXME: rx_ready never raise to 1
-// test SerialFromArduino port
-
-
 uart_rx #(.CLKS_PER_BIT(CLKS_PER_BIT)) rx_from_uart (
   .i_Clock(clk),
   .i_Rx_Serial(SerialFromArduino),
