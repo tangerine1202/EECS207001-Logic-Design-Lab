@@ -3,10 +3,10 @@ module top (
   input rst,                          // Reset
   input serialFromArduino,            // Serial signal from Arduino
   // motor
-  // output reg [1:0] leftDirection,
-  // output reg [1:0] rightDirection,
-  // output leftSpeed,
-  // output rightSpeed,
+  output reg [1:0] leftDirection,     // IN[1], IN[0]
+  output reg [1:0] rightDirection,    // IN[3], IN[2]
+  output leftSpeed,
+  output rightSpeed,
   // debug
   output [15:0] led,
   output [6:0] seg,
@@ -26,6 +26,7 @@ assign rightDirection = direction;
 // assign led[13:12] = leftDirection;
 assign led[14] = rightSpeed;
 assign led[15] = leftSpeed;
+assign led[13:10] = {leftDirection, rightDirection};
 // assign led[15:0] = motorPower;
 assign led[9:0] = debug_duty[9:0];
 assign segNum = {6'd0, debug_duty};
@@ -142,8 +143,8 @@ module PIDController #(
 );
 
 // TODO: Need to be well tuned
-parameter KP = 16'd1;
-parameter KI = 16'd2;
+parameter KP = 16'd2;
+parameter KI = 16'd0;
 parameter KD = 16'd0;
 
 reg [SIZE-1:0] prevAngle;
@@ -179,11 +180,11 @@ assign tmp_next_errorSum = (errorSum + next_error);
 always @(*) begin
   // crop the 'errorSum' to the suit range
   if ((tmp_next_errorSum[SIZE-1] == 1'b0)
-      && (tmp_next_errorSum > 16'd512))
-    next_errorSum = 16'd512;
-  if ((tmp_next_errorSum[SIZE-1] == 1'b1)
-      && (-tmp_next_errorSum > 16'd512))
-    next_errorSum = -16'd512;
+      && (tmp_next_errorSum > 16'd1023))
+    next_errorSum = 16'd1023;
+  else if ((tmp_next_errorSum[SIZE-1] == 1'b1)
+      && -tmp_next_errorSum > 16'd1023)
+    next_errorSum = -16'd1023;
   else
     next_errorSum = tmp_next_errorSum;
 end
