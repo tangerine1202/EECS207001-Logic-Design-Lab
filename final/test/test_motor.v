@@ -8,11 +8,15 @@ module top (
   input clk,
   input rst,
   output reg [1:0] direction,
-  output pwm
+  output pwm,
+  output [1:0] led
 );
 
 parameter TURN_CONST = 32'd50_000_000;     // 100_000_000 / sec
 reg [31:0] cnt;
+
+assign led[0] = pwm;
+assign led[1] = (direction == `MOTOR_FORWARD);
 
 always @(posedge clk) begin
   if (cnt >= TURN_CONST) begin
@@ -34,8 +38,6 @@ motor_pwm motor_pwm_0 (
 
 endmodule
 
-
-endmodule
 
 module motor_pwm (
   input clk,
