@@ -7,32 +7,26 @@
 module top (
   input clk,
   input rst,
+  input [10:0] switch,
   output reg [1:0] direction,
   output pwm,
   output [1:0] led
 );
 
-parameter TURN_CONST = 32'd50_000_000;     // 100_000_000 / sec
-reg [31:0] cnt;
+wire [9:0] duty;
 
 assign led[0] = pwm;
 assign led[1] = (direction == `MOTOR_FORWARD);
+assign duty[9:0] = switch[9:0];
 
 always @(posedge clk) begin
-  if (cnt >= TURN_CONST) begin
-    cnt <= 32'd0;
-    direction <= (direction == `MOTOR_FORWARD) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
-  end
-  else begin
-    cnt <= cnt + 32'd1;
-    direction <= direction;
-  end
+  direction <= (switch[10] == 1'b0) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
 end
 
 motor_pwm motor_pwm_0 (
   .clk(clk),
   .reset(rst),
-  .duty(10'd1000),
+  .duty(duty),
   .pmod_1(pwm)
 );
 
@@ -49,7 +43,7 @@ module motor_pwm (
   PWM_gen pwm_0 (
     .clk(clk),
     .reset(reset),
-    .freq(32'd25000),
+    .freq(32'd05_000),
     .duty(duty),
     .PWM(pmod_1)
   );

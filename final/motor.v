@@ -76,7 +76,7 @@ module motor_pwm (
   PWM_gen pwm_0 (
     .clk(clk),
     .reset(reset),
-    .freq(32'd25000),
+    .freq(32'd25_000),
     .duty(duty),
     .PWM(pmod_1)
   );
