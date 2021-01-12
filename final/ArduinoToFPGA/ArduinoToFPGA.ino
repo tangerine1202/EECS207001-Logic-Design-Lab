@@ -5,10 +5,13 @@
 #include "MPU6050.h"
 #include "math.h"
 
+#define sampleTime  0.005  // Don't modify this line
+
 MPU6050 mpu;
 
-int16_t accY, accZ;
-float accAngle;
+int16_t accY, accZ, gyroX;
+volatile int gyroRate;
+volatile float accAngle, gyroAngle, currentAngle, prevAngle = 0;
 
 SoftwareSerial mySerial(5, 6); //建立軟體串列埠腳位 (RX, TX)
 int LED = 13;
@@ -19,29 +22,33 @@ void setup()
   Serial.begin(115200);   //設定硬體串列埠速率
   mySerial.begin(115200); //設定軟體串列埠速率
   mpu.initialize();
+
+  // calibrate mpu
+//  mpu.setYAccelOffset(0);
+//  mpu.setZAccelOffset(0);
+//  mpu.setXGyroOffset(0);
+
+  // 
+  mpu.setAccelFIFOEnabled(false);
+
+  // initialize PID sampling loop
+//  init_sampling_per_5ms();
 }
 
 void loop()
 {
-  accZ = mpu.getAccelerationZ();
+  // read acceleration and gyroscope values
   accY = mpu.getAccelerationY();
-  accAngle = atan2(accY, accZ) * RAD_TO_DEG;
+  accZ = mpu.getAccelerationZ();  
+  gyroX = mpu.getRotationX();
 
-  if (isnan(accAngle))
-    Serial.println("angle is nan");
-  else
-  {
-    Serial.print("angle: ");
-    Serial.print(accAngle);
-    Serial.print("\n");
-  }
+  accAngle = atan2(accY, accZ)*RAD_TO_DEG;
+  gyroRate = map(gyroX, -32768, 32767, -250, 250);
+  gyroAngle = (float)gyroRate*sampleTime;  
+  currentAngle = 0.9934*(prevAngle + gyroAngle) + 0.0066*(accAngle);
+  prevAngle = currentAngle;
 
-  //  while (Serial.available())
-  //  {
-  //    Serial.read();
-  //    double rx_angle = random(0, 360); // random angle for test
-  double rx_angle = accAngle; // angle read from gy521
-
+  double rx_angle = currentAngle;
   int angle = round(rx_angle) + 180; // calibrate angle from -180~180 to 0~360
   word word_angle = (word)angle;
   byte tx_angle_high = highByte(word_angle);
@@ -57,15 +64,33 @@ void loop()
   int ret2 = mySerial.write(tx_angle_low);
   Serial.println(ret2);
 
-  // TODO: use ISR to sample angle every # milliseconds
-  delay(150);
-  //  }
+  if (angle >= 180)
+    digitalWrite(LED, HIGH);
+  else
+    digitalWrite(LED, LOW);
 }
 
-void led_blink()
-{
-  digitalWrite(LED, HIGH);
-  delay(500);
-  digitalWrite(LED, LOW);
-  delay(500);
-}
+//ISR(TIMER1_COMPA_vect){
+//   // calculate the angle of inclination
+//  accAngle = atan2(accY, accZ)*RAD_TO_DEG;
+//  gyroRate = map(gyroX, -32768, 32767, -250, 250);
+//  gyroAngle = (float)gyroRate*sampleTime;  
+//  currentAngle = 0.9934*(prevAngle + gyroAngle) + 0.0066*(accAngle);
+//  prevAngle = currentAngle;
+//}
+
+//void init_sampling_per_5ms() {  
+//  // initialize Timer1
+//  cli();          // disable global interrupts
+//  TCCR1A = 0;     // set entire TCCR1A register to 0
+//  TCCR1B = 0;     // same for TCCR1B    
+//  // set compare match register to set sample time 5ms
+//  OCR1A = 9999;    
+//  // turn on CTC mode
+//  TCCR1B |= (1 << WGM12);
+//  // Set CS11 bit for prescaling by 8
+//  TCCR1B |= (1 << CS11);
+//  // enable timer compare interrupt
+//  TIMSK1 |= (1 << OCIE1A);
+//  sei();          // enable global interrupts
+//}
