@@ -138,7 +138,7 @@ module PIDController #(
 );
 
 // TODO: Need to be well tuned
-parameter KP = 16'd2;
+parameter KP = 16'd50;
 parameter KI = 16'd0;
 parameter KD = 16'd0;
 
