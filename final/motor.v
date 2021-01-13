@@ -5,12 +5,13 @@
 `define MOTOR_BACKWARD 2'b10
 
 module Motor #(
-    parameter SIZE = 16
+    parameter SIZE = 16,
+    parameter  MOTOR_PWM_OFFSET = 16'd400
 ) (
   input clk,
   input rst,
   input [SIZE-1:0] motorPower,
-  output [1:0] direction,
+  output reg [1:0] direction,
   output [1:0] pwm,              // {left, right}
   // debug
   output [9:0] debug_duty
@@ -18,7 +19,7 @@ module Motor #(
   // debug
   assign debug_duty = duty;
 
-  wire [9:0] absOfPower;
+  wire [SIZE-1:0] absOfPower;
   wire isPowerPositive;
   reg [9:0] duty;
   reg [9:0] next_duty;
@@ -42,19 +43,22 @@ module Motor #(
   assign isPowerPositive = (motorPower[SIZE-1] == 1'b1) ? 1'd0 : 1'd1;
   assign absOfPower = (isPowerPositive) ? motorPower : -motorPower;
 
-  assign direction = (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
   assign pwm = {left_pwm, right_pwm};
 
   assign left_duty = duty;
   assign right_duty = duty;
+  
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       duty <= 10'd0;
+      direction <= `MOTOR_STOP;
       // left_duty <= 10'd0;
       // right_duty <= 10'd0;
-    end else begin
+    end 
+    else begin
       duty <= next_duty;
+      direction <= (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
       // left_duty <= next_left_duty;
       // right_duty <= next_right_duty;
     end
@@ -62,10 +66,10 @@ module Motor #(
 
   always @(*) begin
     // 'duty' range -> 0~1023
-    if (absOfPower > 16'd1023)
+    if (absOfPower + MOTOR_PWM_OFFSET > 16'd1023)
       next_duty = 10'd1023;
     else
-      next_duty = absOfPower[9:0];
+      next_duty = absOfPower[9:0] + MOTOR_PWM_OFFSET;
   end
 
 endmodule
@@ -80,7 +84,8 @@ module motor_pwm (
   PWM_gen pwm_0 (
     .clk(clk),
     .reset(reset),
-    .freq(32'd5_000), // FIXME: origin 25000, does it cause any diff?
+    // FIXME: higher freq since cause to lower response for motor
+    .freq(32'd50000), 
     .duty(duty),
     .PWM(pmod_1)
   );

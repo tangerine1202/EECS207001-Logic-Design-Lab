@@ -3,8 +3,8 @@ module top (
   input rst,                          // Reset
   input serialFromArduino,            // Serial signal from Arduino
   // motor
-  output reg [1:0] leftDirection,     // IN[1], IN[0]
-  output reg [1:0] rightDirection,    // IN[3], IN[2]
+  output [1:0] leftDirection,     // IN[1], IN[0]
+  output [1:0] rightDirection,    // IN[3], IN[2]
   output leftSpeed,
   output rightSpeed,
   // debug
@@ -138,7 +138,7 @@ module PIDController #(
 );
 
 // TODO: Need to be well tuned
-parameter KP = 16'd50;
+parameter KP = 16'd100;
 parameter KI = 16'd0;
 parameter KD = 16'd0;
 
