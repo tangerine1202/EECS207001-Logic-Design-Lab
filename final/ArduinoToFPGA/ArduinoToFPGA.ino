@@ -5,7 +5,7 @@
 #include "MPU6050.h"
 #include "math.h"
 
-#define sampleTime  0.005  // Don't modify this line
+#define sampleTime 0.005 // Don't modify this line
 
 MPU6050 mpu;
 
@@ -24,28 +24,27 @@ void setup()
   mpu.initialize();
 
   // calibrate mpu
-//  mpu.setYAccelOffset(0);
-//  mpu.setZAccelOffset(0);
-//  mpu.setXGyroOffset(0);
+  mpu.setYAccelOffset(-1357);
+  mpu.setZAccelOffset(1472);
+  mpu.setXGyroOffset(28);
 
-  // 
   mpu.setAccelFIFOEnabled(false);
 
   // initialize PID sampling loop
-//  init_sampling_per_5ms();
+  //  init_sampling_per_5ms();
 }
 
 void loop()
 {
   // read acceleration and gyroscope values
   accY = mpu.getAccelerationY();
-  accZ = mpu.getAccelerationZ();  
+  accZ = mpu.getAccelerationZ();
   gyroX = mpu.getRotationX();
 
-  accAngle = atan2(accY, accZ)*RAD_TO_DEG;
+  accAngle = atan2(accY, accZ) * RAD_TO_DEG;
   gyroRate = map(gyroX, -32768, 32767, -250, 250);
-  gyroAngle = (float)gyroRate*sampleTime;  
-  currentAngle = 0.9934*(prevAngle + gyroAngle) + 0.0066*(accAngle);
+  gyroAngle = (float)gyroRate * sampleTime;
+  currentAngle = 0.9934 * (prevAngle + gyroAngle) + 0.0066 * (accAngle);
   prevAngle = currentAngle;
 
   double rx_angle = currentAngle;
@@ -74,18 +73,18 @@ void loop()
 //   // calculate the angle of inclination
 //  accAngle = atan2(accY, accZ)*RAD_TO_DEG;
 //  gyroRate = map(gyroX, -32768, 32767, -250, 250);
-//  gyroAngle = (float)gyroRate*sampleTime;  
+//  gyroAngle = (float)gyroRate*sampleTime;
 //  currentAngle = 0.9934*(prevAngle + gyroAngle) + 0.0066*(accAngle);
 //  prevAngle = currentAngle;
 //}
 
-//void init_sampling_per_5ms() {  
+//void init_sampling_per_5ms() {
 //  // initialize Timer1
 //  cli();          // disable global interrupts
 //  TCCR1A = 0;     // set entire TCCR1A register to 0
-//  TCCR1B = 0;     // same for TCCR1B    
+//  TCCR1B = 0;     // same for TCCR1B
 //  // set compare match register to set sample time 5ms
-//  OCR1A = 9999;    
+//  OCR1A = 9999;
 //  // turn on CTC mode
 //  TCCR1B |= (1 << WGM12);
 //  // Set CS11 bit for prescaling by 8
