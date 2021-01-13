@@ -48,8 +48,6 @@ parameter TARGET_ANGLE = 16'd180;
 wire [SIZE-1:0] currAngle;       // Current Angle (have been filtered)
 wire currAngleReady;             // 'currAngle' is ready to be received
 wire [SIZE-1:0] motorPower;      // Output of PID controller
-wire [SIZE-1:0] absOfPower;      // Absolute value of 'motorPower'
-wire isPowerPositive;            // Is 'motorPower' positive
 wire [1:0] direction;            // Motor move direction
 
 
@@ -82,14 +80,11 @@ PIDController #(
   .motorPower(motorPower)
 );
 
-assign isPowerPositive = (motorPower[SIZE-1] == 1'b1) ? 1'd0 : 1'd1;
-assign absOfPower = (isPowerPositive) ? motorPower : -motorPower;
 
 Motor #(.SIZE(SIZE)) motor (
   .clk(clk),
   .rst(rst),
-  .absOfPower(absOfPower),
-  .isPowerPositive(isPowerPositive),
+  .motorPower(motorPower),
   .direction(direction),
   .pwm({leftSpeed, rightSpeed}),
   // debug

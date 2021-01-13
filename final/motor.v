@@ -9,8 +9,7 @@ module Motor #(
 ) (
   input clk,
   input rst,
-  input [SIZE-1:0] absOfPower,
-  input isPowerPositive,
+  input [SIZE-1:0] motorPower,
   output [1:0] direction,
   output [1:0] pwm,              // {left, right}
   // debug
@@ -37,6 +36,9 @@ module Motor #(
     .duty(right_duty),
     .pmod_1(right_pwm)
   );
+
+  assign isPowerPositive = (motorPower[SIZE-1] == 1'b1) ? 1'd0 : 1'd1;
+  assign absOfPower = (isPowerPositive) ? motorPower : -motorPower;
 
   assign direction = (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
   assign pwm = {left_pwm, right_pwm};
