@@ -18,6 +18,8 @@ module Motor #(
   // debug
   assign debug_duty = duty;
 
+  wire [9:0] absOfPower;
+  wire isPowerPositive;
   reg [9:0] duty;
   reg [9:0] next_duty;
   wire [9:0] left_duty, right_duty;
