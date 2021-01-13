@@ -24,9 +24,9 @@ void setup()
   mpu.initialize();
 
   // calibrate mpu
-  mpu.setYAccelOffset(-1357);
-  mpu.setZAccelOffset(1472);
-  mpu.setXGyroOffset(28);
+  mpu.setYAccelOffset(-1581);
+  mpu.setZAccelOffset(1450);
+  mpu.setXGyroOffset(30);
 
   mpu.setAccelFIFOEnabled(false);
 
