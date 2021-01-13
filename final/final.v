@@ -40,7 +40,7 @@ parameter TARGET_ANGLE = 16'd180;
 // TODO: is this necessary? or count in PID controller?
 // ANS: it's hard to calculate how many clk between arduino send data to ready to receive,
 //      so realtime calculate in module seem to be a better solution.
- parameter CLKS_PER_DATA = 32'd1736;  // used in PID controller to calculate derivative term
+ parameter CLKS_PER_DATA = 32'd1_662_500;  // used in PID controller to calculate derivative term
 
 
 // reg [SIZE-1:0] gyroAngle,     // Angle measured by gyroscope
@@ -127,8 +127,7 @@ endmodule
 module PIDController #(
   parameter SIZE = 16,
   parameter TARGET_ANGLE = 16'd180,
-  // FIXME: need to measure by manual (affect by gy521 sampling span, fpga-arduino communication span)
-  parameter CLKS_PER_DATA = 16'd1736
+  parameter CLKS_PER_DATA = 32'd1_662_500
 ) (
   input clk,
   input rst,
@@ -138,8 +137,8 @@ module PIDController #(
 );
 
 // TODO: Need to be well tuned
-parameter KP = 16'd100;
-parameter KI = 16'd0;
+parameter KP = 16'd97;
+parameter KI = 16'd1;
 parameter KD = 16'd0;
 
 reg [SIZE-1:0] prevAngle;
@@ -171,7 +170,8 @@ end
 
 assign next_error = (currAngle - TARGET_ANGLE);
 
-assign tmp_next_errorSum = (errorSum + next_error);
+// calculate next error Sum
+assign tmp_next_errorSum = errorSum + next_error;
 always @(*) begin
   // crop the 'errorSum' to the suit range
   if ((tmp_next_errorSum[SIZE-1] == 1'b0)

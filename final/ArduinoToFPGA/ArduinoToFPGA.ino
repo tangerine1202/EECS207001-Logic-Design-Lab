@@ -18,18 +18,24 @@ int LED = 13;
 
 void setup()
 {
-  //  pinMode(LED, OUTPUT);
+  // LED on nano board
+  pinMode(LED, OUTPUT);
+
+  // start the communication
   Serial.begin(115200);   //設定硬體串列埠速率
   mySerial.begin(115200); //設定軟體串列埠速率
+
+  
   mpu.initialize();
 
   // calibrate mpu
-  mpu.setYAccelOffset(-1581);
+  mpu.setYAccelOffset(-1456);
   mpu.setZAccelOffset(1450);
-  mpu.setXGyroOffset(30);
+  mpu.setXGyroOffset(31);
 
-  mpu.setAccelFIFOEnabled(false);
-
+//  mpu.setAccelFIFOEnabled(false);
+//  mpu.setXGyroFIFOEnabled(false);
+  
   // initialize PID sampling loop
   //  init_sampling_per_5ms();
 }
@@ -62,6 +68,9 @@ void loop()
   Serial.println(ret);
   int ret2 = mySerial.write(tx_angle_low);
   Serial.println(ret2);
+
+//  mpu.resetFIFO();
+
 
   if (angle >= 180)
     digitalWrite(LED, HIGH);
