@@ -76,7 +76,7 @@ module motor_pwm (
   PWM_gen pwm_0 (
     .clk(clk),
     .reset(reset),
-    .freq(32'd5_000), // FIXME: origin 25000, does it cause any diff?
+    .freq(32'd25_000), // FIXME: origin 25000, does it cause any diff?
     .duty(duty),
     .PWM(pmod_1)
   );

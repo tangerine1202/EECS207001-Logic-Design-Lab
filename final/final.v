@@ -43,8 +43,6 @@ parameter TARGET_ANGLE = 16'd180;
  parameter CLKS_PER_DATA = 32'd1736;  // used in PID controller to calculate derivative term
 
 
-// reg [SIZE-1:0] gyroAngle,     // Angle measured by gyroscope
-// reg [SIZE-1:0] acceAngle,     // Angle measured by accelerometer
 wire [SIZE-1:0] currAngle;       // Current Angle (have been filtered)
 wire currAngleReady;             // 'currAngle' is ready to be received
 wire [SIZE-1:0] motorPower;      // Output of PID controller
@@ -61,14 +59,6 @@ Receive_From_Arduino rx_from_arduino (
   .data(currAngle),
   .isDataReady(currAngleReady)
 );
-
-// TODO: skip filter for test
-// FIXME: filter angle in Arduino
-// ComplementaryFilter #(.SIZE(SIZE)) complementary_filter (
-  // .gyroAngle(gyroAngle),
-  // .acceAngle(acceAngle),
-  // .currAngle(currAngle)
-// );
 
 PIDController #(
   .SIZE(SIZE),
@@ -106,27 +96,6 @@ NumToSeg #(.SIZE(SIZE)) num2seg (
 
 
 endmodule
-
-
-
-/*
-module ComplementaryFilter (
-  input [SIZE-1:0] gyroAngle,
-  input [SIZE-1:0] acceAngle,
-  output [SIZE-1:0] currAngle
-);
-
-parameter SIZE= 16;
-// ref: Arduino Self-Balancing Robot to tune the value
-// FIXME: float number is not synthesizable
-parameter GYRO_RATIO= 0.9;
-
-assign currAngle = (GYRO_RATIO * (prevAngle - gyroAngle)) + (32'd1 - GYRO_RATE* (acceAngle));
-
-endmodule
-*/
-
-
 
 
 module PIDController #(
