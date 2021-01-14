@@ -8,20 +8,18 @@ module top (
   output leftSpeed,
   output rightSpeed,
   // debug
+  input switch,
   output [15:0] led,
   output [6:0] seg,
-  output dp,
+  output reg dp,
   output [3:0] an
 );
 // debug
-wire [1:0] leftDirection;
-wire [1:0] rightDirection;
-wire leftSpeed;
-wire rightSpeed;
 wire [9:0] debug_duty;
-wire [15:0] segNum;
-assign leftDirection = direction;
-assign rightDirection = direction;
+reg [15:0] segNum;
+wire toggleSeg = switch;
+reg [SIZE-1:0] debugPrevAngle;
+
 // assign led[11:10] = rightDirection;
 // assign led[13:12] = leftDirection;
 assign led[14] = rightSpeed;
@@ -29,10 +27,25 @@ assign led[15] = leftSpeed;
 assign led[13:10] = {leftDirection, rightDirection};
 // assign led[15:0] = motorPower;
 assign led[9:0] = debug_duty[9:0];
-assign segNum = {6'd0, debug_duty};
-assign dp = direction[0];
 
 
+always @(*) begin
+  dp = direction[0];
+  if (toggleSeg == 1'b0) begin
+    segNum = {6'd0, debug_duty};
+    debugPrevAngle = 16'd0;
+  end 
+  else begin
+    if (currAngleReady) begin
+      segNum = currAngle; 
+      debugPrevAngle = currAngle;
+    end
+    else begin
+      segNum = debugPrevAngle; 
+      debugPrevAngle = debugPrevAngle;
+    end
+  end
+end
 
 parameter SIZE = 16;
 
@@ -40,7 +53,7 @@ parameter TARGET_ANGLE = 16'd180;
 // TODO: is this necessary? or count in PID controller?
 // ANS: it's hard to calculate how many clk between arduino send data to ready to receive,
 //      so realtime calculate in module seem to be a better solution.
- parameter CLKS_PER_DATA = 32'd1_662_500;  // used in PID controller to calculate derivative term
+//  parameter CLKS_PER_DATA = 32'd1_662_500;  // used in PID controller to calculate derivative term
 
 
 // reg [SIZE-1:0] gyroAngle,     // Angle measured by gyroscope
@@ -50,6 +63,8 @@ wire currAngleReady;             // 'currAngle' is ready to be received
 wire [SIZE-1:0] motorPower;      // Output of PID controller
 wire [1:0] direction;            // Motor move direction
 
+assign leftDirection = direction;
+assign rightDirection = direction;
 
 // Receive angle from Arduino
 Receive_From_Arduino rx_from_arduino (
@@ -70,8 +85,8 @@ Receive_From_Arduino rx_from_arduino (
 
 PIDController #(
   .SIZE(SIZE),
-  .TARGET_ANGLE(TARGET_ANGLE),
-  .CLKS_PER_DATA(CLKS_PER_DATA)
+  .TARGET_ANGLE(TARGET_ANGLE)
+  // .CLKS_PER_DATA(CLKS_PER_DATA)
 ) pid_controller (
   .clk(clk),
   .rst(rst),
@@ -126,8 +141,8 @@ endmodule
 
 module PIDController #(
   parameter SIZE = 16,
-  parameter TARGET_ANGLE = 16'd180,
-  parameter CLKS_PER_DATA = 32'd1_662_500
+  parameter TARGET_ANGLE = 16'd180
+  // parameter CLKS_PER_DATA = 32'd1_662_500
 ) (
   input clk,
   input rst,
@@ -137,32 +152,37 @@ module PIDController #(
 );
 
 // TODO: Need to be well tuned
-parameter KP = 16'd97;
+parameter KP = 16'd77;
 parameter KI = 16'd1;
-parameter KD = 16'd0;
+parameter KD = 16'd10;
 
 reg [SIZE-1:0] prevAngle;
 reg [SIZE-1:0] error;
 reg [SIZE-1:0] errorSum;
+reg [SIZE-1:0] errorDerivative;
 wire [SIZE-1:0] next_error;
 reg [SIZE-1:0] next_errorSum;
+wire [SIZE-1:0] next_errorDerivative;
 wire [SIZE-1:0] tmp_next_errorSum;
 
 always @(posedge clk) begin
   if (rst == 1'b1) begin
     error <= 16'd0;
     errorSum <= 16'd0;
+    errorDerivative <= 32'd0;
     prevAngle <= TARGET_ANGLE;
   end
   else begin
     if (currAngleReady == 1'b1) begin
       error <= next_error;
       errorSum <= next_errorSum;
+      errorDerivative <= next_errorDerivative;
       prevAngle <= currAngle;
     end
     else begin
       error <= error;
       errorSum <= errorSum;
+      errorDerivative <= errorDerivative;
       prevAngle <= prevAngle;
     end
   end
@@ -171,7 +191,7 @@ end
 assign next_error = (currAngle - TARGET_ANGLE);
 
 // calculate next error Sum
-assign tmp_next_errorSum = errorSum + next_error;
+assign tmp_next_errorSum = (errorSum + next_error);
 always @(*) begin
   // crop the 'errorSum' to the suit range
   if ((tmp_next_errorSum[SIZE-1] == 1'b0)
@@ -184,10 +204,16 @@ always @(*) begin
     next_errorSum = tmp_next_errorSum;
 end
 
+// Value of (currAngle - prevAngle) is about -360~360 (very small),
+// dividing with CLKS_PER_DATA will always become 0.  
+// assign next_errorDerivative = ((currAngle - prevAngle) / CLKS_PER_DATA); 
+assign next_errorDerivative = (currAngle - prevAngle);
+
+
 // calculate output from P, I nd D values
 assign motorPower = ( KP * (error)
                     + KI * (errorSum)
-                    + KD * ((currAngle - prevAngle) / CLKS_PER_DATA) );
+                    + KD * (errorDerivative) );
 
 
 endmodule
