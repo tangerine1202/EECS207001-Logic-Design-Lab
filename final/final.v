@@ -1,68 +1,33 @@
 module top (
   input clk,
-  input rst,                          // Reset
-  input serialFromArduino,            // Serial signal from Arduino
+  input rst,
+  // arduino
+  input serialFromArduino,        // Serial signal from Arduino
   // motor
-  output [1:0] leftDirection,     // IN[1], IN[0]
-  output [1:0] rightDirection,    // IN[3], IN[2]
-  output leftSpeed,
-  output rightSpeed,
+  output [1:0] leftDirection,     // Left  motor rotation direction
+  output [1:0] rightDirection,    // Right motor rotation direction
+  output leftSpeed,               // Left  motor pwm
+  output rightSpeed,              // Right motor pwm
   // debug
   input switch,
   output [15:0] led,
+  output [3:0] an,
   output [6:0] seg,
-  output reg dp,
-  output [3:0] an
+  output reg dp
 );
-// debug
-wire [9:0] debug_duty;
-reg [15:0] segNum;
-wire toggleSeg = switch;
-reg [SIZE-1:0] debugPrevAngle;
 
-// assign led[11:10] = rightDirection;
-// assign led[13:12] = leftDirection;
-assign led[14] = rightSpeed;
-assign led[15] = leftSpeed;
-assign led[13:10] = {leftDirection, rightDirection};
-// assign led[15:0] = motorPower;
-assign led[9:0] = debug_duty[9:0];
-
-
-always @(*) begin
-  dp = direction[0];
-  if (toggleSeg == 1'b0) begin
-    segNum = {6'd0, debug_duty};
-    debugPrevAngle = 16'd0;
-  end 
-  else begin
-    if (currAngleReady) begin
-      segNum = currAngle; 
-      debugPrevAngle = currAngle;
-    end
-    else begin
-      segNum = debugPrevAngle; 
-      debugPrevAngle = debugPrevAngle;
-    end
-  end
-end
-
+// Parameters
 parameter SIZE = 16;
-
 parameter TARGET_ANGLE = 16'd180;
-// TODO: is this necessary? or count in PID controller?
-// ANS: it's hard to calculate how many clk between arduino send data to ready to receive,
-//      so realtime calculate in module seem to be a better solution.
-//  parameter CLKS_PER_DATA = 32'd1_662_500;  // used in PID controller to calculate derivative term
+// parameter SAMPLE_TIME = 32'd1_662_500;   // Duration of angle sampling
+// Due to different PID implementation approach, 'SAMPLE_TIME' is not used in the end.
 
 
-wire [SIZE-1:0] currAngle;       // Current Angle (have been filtered)
-wire currAngleReady;             // 'currAngle' is ready to be received
-wire [SIZE-1:0] motorPower;      // Output of PID controller
-wire [1:0] direction;            // Motor move direction
+// Wire & Reg
+wire [SIZE-1:0] currAngle;       // Current angle received from Arduino
+wire currAngleReady;             // If current angle is ready to be received
+wire [SIZE-1:0] motorPower;      // Motor power used to control motor
 
-assign leftDirection = direction;
-assign rightDirection = direction;
 
 // Receive angle from Arduino
 Receive_From_Arduino rx_from_arduino (
@@ -73,10 +38,11 @@ Receive_From_Arduino rx_from_arduino (
   .isDataReady(currAngleReady)
 );
 
+// Calculate motorPower by PID controller
 PIDController #(
   .SIZE(SIZE),
   .TARGET_ANGLE(TARGET_ANGLE)
-  // .CLKS_PER_DATA(CLKS_PER_DATA)
+  // .SAMPLE_TIME(SAMPLE_TIME)
 ) pid_controller (
   .clk(clk),
   .rst(rst),
@@ -85,17 +51,48 @@ PIDController #(
   .motorPower(motorPower)
 );
 
-
-Motor #(.SIZE(SIZE)) motor (
+// Turn motorPower into motor direction and pwm
+Motor #(
+  .SIZE(SIZE)
+) motor (
   .clk(clk),
   .rst(rst),
   .motorPower(motorPower),
-  .direction(direction),
-  .pwm({leftSpeed, rightSpeed}),
+  .leftDirection(leftDirection),
+  .rightDirection(rightDirection),
+  .leftPwm(leftSpeed),
+  .rightPwm(rightSpeed),
   // debug
-  .debug_duty(debug_duty)
+  .debugDuty(debugDuty)
 );
 
+
+// Debug
+reg [SIZE-1:0] debugLatestAngle;    // Latest angle
+wire [9:0] debugDuty;               // Duty of the motor
+reg [15:0] segNum;                  // Number to be displayed on 7-Segment
+wire toggleSeg = switch;            // Toggle 7-Segment to display duty or latest angle
+
+assign led[15] = leftSpeed;         // Display left motor pwm
+assign led[14] = rightSpeed;        // Display right motor pwm
+assign led[13:12] = leftDirection;  // Display left motor direction
+assign led[11:10] = rightDirection; // Display right motor direction
+assign led[9:0] = debugDuty[9:0];   // Display motor duty
+assign dp = leftDirection[0];       // Display motor direction
+
+// Toggle 7-Segment
+assign segNum = (toggleSeg == 1'b0) ? {6'd0, debugDuty} : debugLatestAngle;
+
+always @(posedge clk) begin
+  if (currAngleReady == 1'b1) begin
+    segNum <= currAngle;
+    debugLatestAngle <= currAngle;
+  end
+  else begin
+    segNum <= debugLatestAngle;
+    debugLatestAngle <= debugLatestAngle;
+  end
+end
 
 NumToSeg #(.SIZE(SIZE)) num2seg (
   .clk(clk),
@@ -104,14 +101,13 @@ NumToSeg #(.SIZE(SIZE)) num2seg (
   .an(an)
 );
 
-
 endmodule
 
 
 module PIDController #(
   parameter SIZE = 16,
   parameter TARGET_ANGLE = 16'd180
-  // parameter CLKS_PER_DATA = 32'd1_662_500
+  // parameter SAMPLE_TIME = 32'd1_662_500
 ) (
   input clk,
   input rst,
@@ -120,15 +116,15 @@ module PIDController #(
   output [SIZE-1:0] motorPower
 );
 
-// TODO: Need to be well tuned
+// P, I, D parameters
 parameter KP = 16'd77;
 parameter KI = 16'd1;
 parameter KD = 16'd10;
 
-reg [SIZE-1:0] prevAngle;
-reg [SIZE-1:0] error;
-reg [SIZE-1:0] errorSum;
-reg [SIZE-1:0] errorDerivative;
+reg [SIZE-1:0] prevAngle;             // Previous angle
+reg [SIZE-1:0] error;                 // Current error
+reg [SIZE-1:0] errorSum;              // Integral of the error over time
+reg [SIZE-1:0] errorDerivative;       // Estimate of the future error
 wire [SIZE-1:0] next_error;
 reg [SIZE-1:0] next_errorSum;
 wire [SIZE-1:0] next_errorDerivative;
@@ -138,7 +134,7 @@ always @(posedge clk) begin
   if (rst == 1'b1) begin
     error <= 16'd0;
     errorSum <= 16'd0;
-    errorDerivative <= 32'd0;
+    errorDerivative <= 16'd0;
     prevAngle <= TARGET_ANGLE;
   end
   else begin
@@ -157,32 +153,40 @@ always @(posedge clk) begin
   end
 end
 
+
+// Calculate next error
 assign next_error = (currAngle - TARGET_ANGLE);
 
-// calculate next error Sum
+// Calculate next errorSum
+/*
+* Sample time is combined into KI parameter.
+* Details are described in the report.
+*/
 assign tmp_next_errorSum = (errorSum + next_error);
 always @(*) begin
-  // crop the 'errorSum' to the suit range
-  if ((tmp_next_errorSum[SIZE-1] == 1'b0)
-      && (tmp_next_errorSum > 16'd1023))
+  // Crop the 'errorSum' into the suit range
+  if ((tmp_next_errorSum[SIZE-1] == 1'b0) && (tmp_next_errorSum > 16'd1023))
     next_errorSum = 16'd1023;
-  else if ((tmp_next_errorSum[SIZE-1] == 1'b1)
-      && -tmp_next_errorSum > 16'd1023)
+  else if ((tmp_next_errorSum[SIZE-1] == 1'b1) && (-tmp_next_errorSum > 16'd1023))
     next_errorSum = -16'd1023;
   else
     next_errorSum = tmp_next_errorSum;
 end
 
-// Value of (currAngle - prevAngle) is about -360~360 (very small),
-// dividing with CLKS_PER_DATA will always become 0.  
-// assign next_errorDerivative = ((currAngle - prevAngle) / CLKS_PER_DATA); 
+// Calculate next errorDerivative
+/*
+* Sample time is combined into KD parameter.
+* Since value of (currAngle - prevAngle) is about -360~360, if we divide it with
+* sample time (about 1.6M), the result will always become 0.
+* Details are described in the report.
+*/
+// assign next_errorDerivative = ((currAngle - prevAngle) / SAMPLE_TIME);
 assign next_errorDerivative = (currAngle - prevAngle);
 
 
-// calculate output from P, I nd D values
-assign motorPower = ( KP * (error)
-                    + KI * (errorSum)
-                    + KD * (errorDerivative) );
+assign motorPower = ( KP * error
+                    + KI * errorSum
+                    + KD * errorDerivative );
 
 
 endmodule

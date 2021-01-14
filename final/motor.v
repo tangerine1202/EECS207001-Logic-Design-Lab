@@ -1,7 +1,7 @@
-// Modified from Lab6 - The Car
+// Modified the code from Lab6
 
 `define MOTOR_STOP 2'b00
-`define MOTOR_FORWARD 2'b01   // [1]: backward, [0]: forward
+`define MOTOR_FORWARD 2'b01
 `define MOTOR_BACKWARD 2'b10
 
 module Motor #(
@@ -11,13 +11,16 @@ module Motor #(
   input clk,
   input rst,
   input [SIZE-1:0] motorPower,
-  output reg [1:0] direction,
-  output [1:0] pwm,              // {left, right}
+  output reg [1:0] leftDirection,
+  output reg [1:0] rightDirection,
+  output leftPwm,
+  output rightPwm,
   // debug
-  output [9:0] debug_duty
+  output [9:0] debugDuty
 );
-  // debug
-  assign debug_duty = duty;
+
+  // Debug
+  assign debugDuty = duty;
 
   wire [SIZE-1:0] absOfPower;
   wire isPowerPositive;
@@ -47,7 +50,6 @@ module Motor #(
 
   assign left_duty = duty;
   assign right_duty = duty;
-  
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
@@ -55,7 +57,7 @@ module Motor #(
       direction <= `MOTOR_STOP;
       // left_duty <= 10'd0;
       // right_duty <= 10'd0;
-    end 
+    end
     else begin
       duty <= next_duty;
       direction <= (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
@@ -85,7 +87,7 @@ module motor_pwm (
     .clk(clk),
     .reset(reset),
     // FIXME: higher freq since cause to lower response for motor
-    .freq(32'd50000), 
+    .freq(32'd50000),
     .duty(duty),
     .PWM(pmod_1)
   );
