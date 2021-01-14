@@ -13,7 +13,7 @@ module top (
   output [15:0] led,
   output [3:0] an,
   output [6:0] seg,
-  output reg dp
+  output dp
 );
 
 // Parameters
@@ -27,6 +27,12 @@ parameter TARGET_ANGLE = 16'd180;
 wire [SIZE-1:0] currAngle;       // Current angle received from Arduino
 wire currAngleReady;             // If current angle is ready to be received
 wire [SIZE-1:0] motorPower;      // Motor power used to control motor
+
+// Debug
+reg [SIZE-1:0] debugLatestAngle;    // Latest angle
+wire [9:0] debugDuty;               // Duty of the motor
+wire [15:0] segNum;                  // Number to be displayed on 7-Segment
+wire toggleSeg = switch;            // Toggle 7-Segment to display duty or latest angle
 
 
 // Receive angle from Arduino
@@ -68,11 +74,6 @@ Motor #(
 
 
 // Debug
-reg [SIZE-1:0] debugLatestAngle;    // Latest angle
-wire [9:0] debugDuty;               // Duty of the motor
-reg [15:0] segNum;                  // Number to be displayed on 7-Segment
-wire toggleSeg = switch;            // Toggle 7-Segment to display duty or latest angle
-
 assign led[15] = leftSpeed;         // Display left motor pwm
 assign led[14] = rightSpeed;        // Display right motor pwm
 assign led[13:12] = leftDirection;  // Display left motor direction
@@ -84,13 +85,14 @@ assign dp = leftDirection[0];       // Display motor direction
 assign segNum = (toggleSeg == 1'b0) ? {6'd0, debugDuty} : debugLatestAngle;
 
 always @(posedge clk) begin
-  if (currAngleReady == 1'b1) begin
-    segNum <= currAngle;
-    debugLatestAngle <= currAngle;
+  if (rst == 1'b1) begin
+    debugLatestAngle <= 16'd0;   
   end
   else begin
-    segNum <= debugLatestAngle;
-    debugLatestAngle <= debugLatestAngle;
+    if (currAngleReady == 1'b1)
+      debugLatestAngle <= currAngle;
+    else
+     debugLatestAngle <= debugLatestAngle;
   end
 end
 

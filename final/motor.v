@@ -37,7 +37,6 @@ module Motor #(
     .duty(duty),
     .pmod_1(rightPwm)
   );
-  assign pwm = {left_pwm, right_pwm};
 
   assign isPowerPositive = (motorPower[SIZE-1] == 1'b1) ? 1'd0 : 1'd1;
   assign absOfPower = (isPowerPositive) ? motorPower : -motorPower;
@@ -45,11 +44,13 @@ module Motor #(
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       duty <= 10'd0;
-      direction <= `MOTOR_STOP;
+      leftDirection <= `MOTOR_STOP;
+      rightDirection <= `MOTOR_STOP;
     end
     else begin
       duty <= next_duty;
-      direction <= (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
+      leftDirection <= (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
+      rightDirection <= (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
     end
   end
 
