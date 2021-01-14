@@ -6,7 +6,7 @@
 
 module Motor #(
     parameter SIZE = 16,
-    parameter  MOTOR_PWM_OFFSET = 16'd400
+    parameter MOTOR_PWM_OFFSET = 16'd400    // Offset of motor pwm
 ) (
   input clk,
   input rst,
@@ -19,60 +19,50 @@ module Motor #(
   output [9:0] debugDuty
 );
 
-  // Debug
-  assign debugDuty = duty;
-
-  wire [SIZE-1:0] absOfPower;
-  wire isPowerPositive;
-  reg [9:0] duty;
+  wire isPowerPositive;               // The sign of the power
+  wire [SIZE-1:0] absOfPower;         // The absolute value of the power
+  reg [9:0] duty;                     // Duty of motor pwm
   reg [9:0] next_duty;
-  wire [9:0] left_duty, right_duty;
-  // reg [9:0] next_left_duty, next_right_duty;
-  wire left_pwm, right_pwm;
+
 
   motor_pwm m0(
     .clk(clk),
     .reset(rst),
-    .duty(left_duty),
-    .pmod_1(left_pwm)
+    .duty(duty),
+    .pmod_1(leftPwm)
   );
   motor_pwm m1(
     .clk(clk),
     .reset(rst),
-    .duty(right_duty),
-    .pmod_1(right_pwm)
+    .duty(duty),
+    .pmod_1(rightPwm)
   );
+  assign pwm = {left_pwm, right_pwm};
 
   assign isPowerPositive = (motorPower[SIZE-1] == 1'b1) ? 1'd0 : 1'd1;
   assign absOfPower = (isPowerPositive) ? motorPower : -motorPower;
-
-  assign pwm = {left_pwm, right_pwm};
-
-  assign left_duty = duty;
-  assign right_duty = duty;
 
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       duty <= 10'd0;
       direction <= `MOTOR_STOP;
-      // left_duty <= 10'd0;
-      // right_duty <= 10'd0;
     end
     else begin
       duty <= next_duty;
       direction <= (isPowerPositive) ? `MOTOR_BACKWARD : `MOTOR_FORWARD;
-      // left_duty <= next_left_duty;
-      // right_duty <= next_right_duty;
     end
   end
 
   always @(*) begin
-    // 'duty' range -> 0~1023
+    // Crop duty into suit range
     if (absOfPower + MOTOR_PWM_OFFSET > 16'd1023)
       next_duty = 10'd1023;
     else
       next_duty = absOfPower[9:0] + MOTOR_PWM_OFFSET;
   end
+
+  // Debug
+  assign debugDuty = duty;
 
 endmodule
 
@@ -86,7 +76,6 @@ module motor_pwm (
   PWM_gen pwm_0 (
     .clk(clk),
     .reset(reset),
-    // FIXME: higher freq since cause to lower response for motor
     .freq(32'd50000),
     .duty(duty),
     .PWM(pmod_1)
