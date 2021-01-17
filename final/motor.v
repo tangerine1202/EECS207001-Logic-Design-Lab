@@ -1,5 +1,4 @@
 // Modified the code from Lab6
-
 `define MOTOR_STOP 2'b00
 `define MOTOR_FORWARD 2'b01
 `define MOTOR_BACKWARD 2'b10
@@ -19,9 +18,9 @@ module Motor #(
   output [9:0] debugDuty
 );
 
-  wire isPowerPositive;               // The sign of the power
-  wire [SIZE-1:0] absOfPower;         // The absolute value of the power
-  reg [9:0] duty;                     // Duty of motor pwm
+  wire isPowerPositive;
+  wire [SIZE-1:0] absOfPower;
+  reg [9:0] duty;
   reg [9:0] next_duty;
 
 
@@ -41,6 +40,7 @@ module Motor #(
   assign isPowerPositive = (motorPower[SIZE-1] == 1'b1) ? 1'd0 : 1'd1;
   assign absOfPower = (isPowerPositive) ? motorPower : -motorPower;
 
+  // Use sign of motorPower to control the direction
   always @(posedge clk) begin
     if (rst == 1'b1) begin
       duty <= 10'd0;
@@ -54,13 +54,15 @@ module Motor #(
     end
   end
 
+  // Use absolute value of motorPower to control the speed
   always @(*) begin
-    // Crop duty into suit range
     if (absOfPower + MOTOR_PWM_OFFSET > 16'd1023)
       next_duty = 10'd1023;
     else
+      // FIXME: 10 bits + 16 bits
       next_duty = absOfPower[9:0] + MOTOR_PWM_OFFSET;
   end
+
 
   // Debug
   assign debugDuty = duty;
