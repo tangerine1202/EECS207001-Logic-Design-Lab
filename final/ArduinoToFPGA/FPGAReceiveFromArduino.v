@@ -11,8 +11,8 @@ module Receive_From_Arduino (
 parameter CLKS_PER_BIT = 32'd868;  // CLK_FREQ / UART_BAUD
 
 parameter IDLE = 2'd0;
-parameter RX_MSB = 2'd1;
-parameter RX_LSB = 2'd2;
+parameter RX_MSB = 2'd1;        // receive MSB state
+parameter RX_LSB = 2'd2;        // receive LSB state
 parameter DATA_READY = 2'd3;
 
 wire rxReady;
