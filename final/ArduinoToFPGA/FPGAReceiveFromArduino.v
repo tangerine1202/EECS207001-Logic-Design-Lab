@@ -1,4 +1,4 @@
-module Receive_From_Arduino (
+module ReceiveFromArduino (
   input clk,
   input rst,
   input serialFromArduino,

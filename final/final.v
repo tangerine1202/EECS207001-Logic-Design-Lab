@@ -33,7 +33,7 @@ wire toggleSeg = switch;         // Toggle 7-Segment to display duty or latest a
 
 
 // Receive angle from Arduino
-Receive_From_Arduino rx_from_arduino (
+ReceiveFromArduino rx_from_arduino (
   .clk(clk),
   .rst(rst),
   .serialFromArduino(serialFromArduino),
