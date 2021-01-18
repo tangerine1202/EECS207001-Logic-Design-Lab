@@ -33,7 +33,7 @@ void setup()
 
 void loop()
 {
-  // Read acceleration and gyroscope values
+  // 讀取加速度與陀螺儀數值
   accY = mpu.getAccelerationY();
   accZ = mpu.getAccelerationZ();
   gyroX = mpu.getRotationX();
@@ -58,10 +58,10 @@ void loop()
   Serial.println(tx_angle_high, BIN);
   Serial.print("Low  bits: ");
   Serial.println(tx_angle_low, BIN);
-  // 讀取 PC 傳送之字元,從軟體串列埠 TX 送給 FPGA 板
+  // 讀取 PC 傳送之字元,從軟體串列埠 TX 傳送給 FPGA 板
   int ret = mySerial.write(tx_angle_high);
-  Serial.println(ret);
   int ret2 = mySerial.write(tx_angle_low);
+  Serial.println(ret);
   Serial.println(ret2);
 
   // （Debug）
